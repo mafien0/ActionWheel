@@ -1,6 +1,6 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu.widgets.pizza;
 
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 
 /**
  * Counts hover time for elements that should smoothly react on hovering Example: Pizza widget slice
@@ -22,7 +22,7 @@ public class HoverManager {
    */
   public void tickHover(boolean isMouseHovered, float delta) {
     hoverTime += delta * (isMouseHovered ? 1 : -2);
-    hoverTime = MathHelper.clamp(hoverTime, 0, maxHoverTime);
+    hoverTime = Mth.clamp(hoverTime, 0, maxHoverTime);
   }
 
   /**

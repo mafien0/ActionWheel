@@ -1,13 +1,13 @@
 package io.github.JumperOnJava.lavajumper.gui.widgets;
 
 import java.util.function.Consumer;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 /** Slider widget for general use. */
-public class SliderWidget extends net.minecraft.client.gui.widget.SliderWidget {
+public class SliderWidget extends net.minecraft.client.gui.components.AbstractSliderButton {
   private final float round;
   private Consumer<Double> changedListener;
-  private Text text;
+  private Component text;
   public double min, max;
 
   /**
@@ -28,7 +28,7 @@ public class SliderWidget extends net.minecraft.client.gui.widget.SliderWidget {
       int y,
       int width,
       int height,
-      Text text,
+      Component text,
       double minValue,
       double maxValue,
       double value,
@@ -43,28 +43,28 @@ public class SliderWidget extends net.minecraft.client.gui.widget.SliderWidget {
   }
 
   public SliderWidget(
-      int x, int y, int width, int height, Text text, double maxValue, double value, int round) {
+      int x, int y, int width, int height, Component text, double maxValue, double value, int round) {
     this(x, y, width, height, text, 0, maxValue, value, round);
   }
 
   @Override
   protected void updateMessage() {}
 
-  public void setText(Text text) {
+  public void setText(Component text) {
     this.text = text;
     updateMessage();
   }
 
-  public Text getText() {
+  public Component getText() {
     return text;
   }
 
   @Override
-  public Text getMessage() {
+  public Component getMessage() {
     var val = round(scaleValueFrom01(value));
     var isInt = round == (int) round;
     var s = isInt ? String.valueOf((int) val) : String.valueOf(val);
-    return this.text.copy().append(Text.literal(" " + s));
+    return this.text.copy().append(Component.literal(" " + s));
   }
 
   public double round(double value) {

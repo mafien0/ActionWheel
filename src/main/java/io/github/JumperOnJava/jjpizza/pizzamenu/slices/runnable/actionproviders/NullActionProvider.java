@@ -2,10 +2,10 @@ package io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionproviders
 
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.ConfigurablePizzaSlice;
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ConfigurableRunnable;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 public class NullActionProvider implements ConfigurableRunnable {
   public NullActionProvider(boolean isReal) {}
@@ -15,11 +15,11 @@ public class NullActionProvider implements ConfigurableRunnable {
 
   @Override
   public Screen getConfiguratorScreen() {
-    return new Screen(Text.empty()) {
-      public void render(DrawContext context, int mx, int my, float d) {
+    return new Screen(Component.empty()) {
+      public void render(GuiGraphics context, int mx, int my, float d) {
         context.fill(0, 0, width, height, 0x3F220000);
-        context.drawCenteredTextWithShadow(
-            MinecraftClient.getInstance().textRenderer,
+        context.drawCenteredString(
+            Minecraft.getInstance().font,
             "No Action",
             width / 2,
             height / 2,

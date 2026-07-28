@@ -1,32 +1,32 @@
 package io.github.JumperOnJava.lavajumper.gui;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class GuiHelper {
-  public static Vec3d transformCoords(MatrixStack matrixStack, Vec3d vec3d) {
+  public static Vec3 transformCoords(PoseStack matrixStack, Vec3 vec3d) {
     return transformCoords(matrixStack, vec3d.x, vec3d.y, vec3d.z);
   }
 
-  public static Vec3d transformCoords(MatrixStack matrixStack, double x, double y, double z) {
+  public static Vec3 transformCoords(PoseStack matrixStack, double x, double y, double z) {
     var tv =
         matrixStack
-            .peek()
-            .getPositionMatrix()
+            .last()
+            .pose()
             .transform(new Vector4f((float) x, (float) y, (float) z, 1));
-    return new Vec3d(new Vector3f(tv.x, tv.y, tv.z));
+    return new Vec3(new Vector3f(tv.x, tv.y, tv.z));
   }
 
-  public static Vec3d transformCoords(MatrixStack matrixStack, double x, double y) {
+  public static Vec3 transformCoords(PoseStack matrixStack, double x, double y) {
     return transformCoords(matrixStack, x, y, 0);
   }
 
-  public static void renderSides(DrawContext context, int x, int y, int width, int height) {
+  public static void renderSides(GuiGraphics context, int x, int y, int width, int height) {
     y -= 1;
     height += 1;
     context.fill(x - 7, y - 7, x + width + 7, y + height + 7, 0xFF000000);
@@ -46,12 +46,12 @@ public class GuiHelper {
     int color;
 
     public TestScreen(int color) {
-      super(Text.empty());
+      super(Component.empty());
       this.color = color;
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
       super.render(context, mouseX, mouseY, delta);
       context.fill(0, 0, width, height, color);
     }

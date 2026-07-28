@@ -1,11 +1,11 @@
 package io.github.JumperOnJava.lavajumper.common;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.function.Consumer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 
 public class Binder {
   /**
@@ -16,15 +16,15 @@ public class Binder {
    * @param defaultKey
    * @param callback
    */
-  public static KeyBinding addBind(
-      String displayName, String category, int defaultKey, Consumer<MinecraftClient> callback) {
+  public static KeyMapping addBind(
+      String displayName, String category, int defaultKey, Consumer<Minecraft> callback) {
     var bind =
-        new KeyBinding(
-            displayName, InputUtil.Type.KEYSYM, defaultKey, category); // GLFW.GLFW_KEY_DOWN
+        new KeyMapping(
+            displayName, InputConstants.Type.KEYSYM, defaultKey, category); // GLFW.GLFW_KEY_DOWN
     KeyBindingHelper.registerKeyBinding(bind);
     ClientTickEvents.END_CLIENT_TICK.register(
         client -> {
-          while (bind.wasPressed()) {
+          while (bind.consumeClick()) {
             callback.accept(client);
           }
         });
@@ -40,8 +40,8 @@ public class Binder {
    * @return
    * @api
    */
-  public static KeyBinding addBind(
-      String displayName, int defaultKey, Consumer<MinecraftClient> callback) {
+  public static KeyMapping addBind(
+      String displayName, int defaultKey, Consumer<Minecraft> callback) {
     return addBind(displayName, "LavaJumper", defaultKey, callback);
   }
 
@@ -52,8 +52,8 @@ public class Binder {
    * @param category
    * @param callback
    */
-  public static KeyBinding addBind(
-      String displayName, String category, Consumer<MinecraftClient> callback) {
+  public static KeyMapping addBind(
+      String displayName, String category, Consumer<Minecraft> callback) {
     return addBind(displayName, category, -1, callback);
   }
 }

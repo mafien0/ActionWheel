@@ -1,9 +1,9 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu.widgets.pizza;
 
 import io.github.JumperOnJava.jjpizza.datatypes.CircleSlice;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ColorHelper;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 
 public interface PizzaSlice {
   default void onRightClick() {}
@@ -13,7 +13,7 @@ public interface PizzaSlice {
   default void onScroll(double scrollX, double scrollY) {}
 
   default int getBackgroundColor() {
-    return ColorHelper.getArgb(255, 0, 0, 0);
+    return ARGB.color(255, 0, 0, 0);
   }
 
   /**
@@ -21,12 +21,12 @@ public interface PizzaSlice {
    *
    * @return
    */
-  default Identifier getIconTexture() {
+  default ResourceLocation getIconTexture() {
     return null;
   }
 
-  default Text getName() {
-    return Text.empty();
+  default Component getName() {
+    return Component.empty();
   }
 
   /**

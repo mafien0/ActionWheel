@@ -10,9 +10,8 @@ import io.github.JumperOnJava.lavajumper.common.FileReadWrite;
 import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import java.io.File;
 import java.util.*;
-import java.util.LinkedList;
 import java.util.function.Consumer;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 public abstract class PizzaManager {
   List<RunnableSlice> actions = new ArrayList<>();
@@ -22,7 +21,7 @@ public abstract class PizzaManager {
     actions = load();
   }
 
-  public void openPizza(MinecraftClient client) {
+  public void openPizza(Minecraft client) {
     client.setScreen(new PizzaScreen(actions, getBuilderScreen(), this));
   }
 

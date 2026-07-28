@@ -4,9 +4,9 @@ import io.github.JumperOnJava.jjpizza.datatypes.CircleSlice;
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.ConfigurablePizzaSlice;
 import io.github.JumperOnJava.jjpizza.pizzamenu.widgets.pizza.PizzaSlice;
 import java.util.function.Consumer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class EditorPizzaSlice implements PizzaSlice {
   private final ConfigurablePizzaSlice targetAction;
@@ -46,12 +46,12 @@ public class EditorPizzaSlice implements PizzaSlice {
   }
 
   @Override
-  public Identifier getIconTexture() {
+  public ResourceLocation getIconTexture() {
     return targetAction.getIconTexture();
   }
 
   @Override
-  public Text getName() {
+  public Component getName() {
     return targetAction.getName();
   }
 }

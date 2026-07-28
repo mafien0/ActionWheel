@@ -4,17 +4,17 @@ import io.github.JumperOnJava.lavajumper.gui.widgets.SubScreen;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.function.Consumer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 public abstract class AskScreen<T> extends Screen {
   private final Consumer<T> onSuccess;
   private final Runnable onFail;
 
   public AskScreen(Consumer<T> onSuccess, Runnable onFail) {
-    super(Text.empty());
+    super(Component.empty());
     this.onSuccess = onSuccess;
     this.onFail = onFail;
   }
@@ -51,13 +51,13 @@ public abstract class AskScreen<T> extends Screen {
   }
 
   @Override
-  public void close() {
+  public void onClose() {
     fail();
   }
 
   public static <T> void ask(AskScreen<T> askScreen) {
-    var client = MinecraftClient.getInstance();
-    var currentScreen = client.currentScreen;
+    var client = Minecraft.getInstance();
+    var currentScreen = client.screen;
     if (currentScreen == null) {
       client.setScreen(askScreen);
       return;
@@ -65,14 +65,14 @@ public abstract class AskScreen<T> extends Screen {
     var askSubScreen =
         new OverlayScreen(0, 0, currentScreen.width, currentScreen.height).setScreen(askScreen);
     currentScreen.children();
-    currentScreen.drawables.add(0, askSubScreen);
-    ((java.util.List<Element>) currentScreen.children()).add(0, askSubScreen);
+    currentScreen.renderables.add(0, askSubScreen);
+    ((java.util.List<GuiEventListener>) currentScreen.children()).add(0, askSubScreen);
   }
 
   private static <T extends AskScreen<?>> void closeScreen(T screen) {
-    var client = MinecraftClient.getInstance();
-    var children = client.currentScreen.children();
-    var del = new ArrayList<Element>();
+    var client = Minecraft.getInstance();
+    var children = client.screen.children();
+    var del = new ArrayList<GuiEventListener>();
     for (var c : children) {
       if (c instanceof OverlayScreen overlayScreen) {
         // bruh gonna use reflection
@@ -88,7 +88,7 @@ public abstract class AskScreen<T> extends Screen {
       }
     }
     for (var d : del) {
-      client.currentScreen.remove(d);
+      client.screen.removeWidget(d);
     }
   }
 

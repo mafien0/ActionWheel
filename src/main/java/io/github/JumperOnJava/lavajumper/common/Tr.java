@@ -4,9 +4,9 @@ import com.google.gson.GsonBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public class Tr {
   static Map<String, String> translationMap = new HashMap<>();
@@ -28,7 +28,7 @@ public class Tr {
   }
 
   private static void addKeyToTranslation(String key) {
-    if (!I18n.hasTranslation(key)) translationMap.put(key, "");
+    if (!I18n.exists(key)) translationMap.put(key, "");
   }
 
   /**
@@ -39,8 +39,8 @@ public class Tr {
    * @param key
    * @return
    */
-  public static MutableText get(String key) {
+  public static MutableComponent get(String key) {
     addKeyToTranslation(key);
-    return Text.translatable(key);
+    return Component.translatable(key);
   }
 }

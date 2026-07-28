@@ -4,21 +4,21 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
-import net.minecraft.client.gui.widget.PressableWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.network.chat.Component;
 
 /** Scroll list widget for general use. */
 public class ScrollListWidget
-    extends AlwaysSelectedEntryListWidget<ScrollListWidget.ScrollListEntry> {
+    extends ObjectSelectionList<ScrollListWidget.ScrollListEntry> {
   public static boolean renderingEntries;
 
   public ScrollListWidget(
-      MinecraftClient client, int width, int height, int x, int y, int itemHeight) {
+      Minecraft client, int width, int height, int x, int y, int itemHeight) {
     super(client, width, height, y, itemHeight);
     setX(x);
     // setRenderBackground(false);
@@ -37,7 +37,7 @@ public class ScrollListWidget
   }
 
   @Override
-  protected int getScrollbarX() {
+  protected int getScrollbarPosition() {
     return width - 6;
   }
 
@@ -66,17 +66,17 @@ public class ScrollListWidget
    * Scroll list entry. Out of box does nothing but using addDrawableChild method you can add
    * widgets for custom behaviour.
    */
-  public static class ScrollListEntry extends AlwaysSelectedEntryListWidget.Entry<ScrollListEntry> {
-    private final List<Drawable> drawables = Lists.newArrayList();
-    private final List<Element> children = Lists.newArrayList();
+  public static class ScrollListEntry extends ObjectSelectionList.Entry<ScrollListEntry> {
+    private final List<Renderable> drawables = Lists.newArrayList();
+    private final List<GuiEventListener> children = Lists.newArrayList();
     private boolean isSelected = false;
     private Consumer<ScrollListEntry> activationConsumer;
     private BiFunction<Integer, Integer, Boolean> isHoveredFunction;
-    private List<Element> deactivate = Lists.newArrayList();
+    private List<GuiEventListener> deactivate = Lists.newArrayList();
 
     @Override
-    public Text getNarration() {
-      return Text.empty();
+    public Component getNarration() {
+      return Component.empty();
     }
 
     int currentX, currentY;
@@ -84,7 +84,7 @@ public class ScrollListWidget
     private void setSelected(boolean selected) {
       this.isSelected = selected;
       for (var d : deactivate) {
-        if (d instanceof PressableWidget pw) {
+        if (d instanceof AbstractButton pw) {
           pw.active = !isSelected;
         }
       }
@@ -92,7 +92,7 @@ public class ScrollListWidget
 
     @Override
     public void render(
-        DrawContext context,
+        GuiGraphics context,
         int index,
         int y,
         int x,
@@ -103,8 +103,8 @@ public class ScrollListWidget
         boolean hovered,
         float delta) {
       for (var d : drawables) {
-        context.getMatrices().push();
-        context.getMatrices().translate(x, y, 0);
+        context.pose().pushPose();
+        context.pose().translate(x, y, 0);
         if (!isHoveredFunction.apply(mouseX, mouseY)) {
           mouseX += 100000;
           mouseY += 100000;
@@ -114,7 +114,7 @@ public class ScrollListWidget
         ScrollListWidget.renderingEntries = false;
         currentX = x;
         currentY = y;
-        context.getMatrices().pop();
+        context.pose().popPose();
       }
     }
 
@@ -142,7 +142,7 @@ public class ScrollListWidget
      * @return
      * @param <T>
      */
-    public <T extends Element & Drawable> T addDrawableChild(
+    public <T extends GuiEventListener & Renderable> T addDrawableChild(
         T drawableElement, boolean deactivateOnSelect) {
       this.drawables.add(drawableElement);
       this.children.add(drawableElement);

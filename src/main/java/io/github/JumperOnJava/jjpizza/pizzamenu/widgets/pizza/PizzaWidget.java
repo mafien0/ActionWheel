@@ -2,18 +2,18 @@ package io.github.JumperOnJava.jjpizza.pizzamenu.widgets.pizza;
 
 import java.util.LinkedList;
 import java.util.List;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.profiler.Profilers;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.world.phys.Vec2;
 
 /**
  * Pizza menu widget Should be set up by using setupSize and setupSlices methods to work properly.
  */
-public class PizzaWidget implements Drawable, Element, Selectable {
+public class PizzaWidget implements Renderable, GuiEventListener, NarratableEntry {
   private final LinkedList<PizzaWidgetSlice> slices = new LinkedList<>();
   public float radius;
   public float innerRadius;
@@ -44,12 +44,12 @@ public class PizzaWidget implements Drawable, Element, Selectable {
     return this;
   }
 
-  public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-    context.getMatrices().push();
+  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    context.pose().pushPose();
     // ActionTextRenderer.sendChatMessag*e("x: ",mouseX," y: ",mouseY);
-    var prof = Profilers.get();
+    var prof = Profiler.get();
     prof.push("Pizza");
-    context.getMatrices().translate(x, y, 0);
+    context.pose().translate(x, y, 0);
     slices.forEach(
         slice -> {
           slice.render(context, mouseX - x, mouseY - y, delta);
@@ -63,7 +63,7 @@ public class PizzaWidget implements Drawable, Element, Selectable {
           slice.renderIcons(context);
         });
     prof.pop();
-    context.getMatrices().pop();
+    context.pose().popPose();
   }
 
   @Override
@@ -86,15 +86,15 @@ public class PizzaWidget implements Drawable, Element, Selectable {
   }
 
   @Override
-  public SelectionType getType() {
-    return SelectionType.HOVERED;
+  public NarrationPriority narrationPriority() {
+    return NarrationPriority.HOVERED;
   }
 
   @Override
   public boolean isMouseOver(double mouseX, double mouseY) {
-    var center = new Vec2f(x, y);
-    var mouse = new Vec2f((float) mouseX, (float) mouseY);
-    var distanceSq = center.distanceSquared(mouse);
+    var center = new Vec2(x, y);
+    var mouse = new Vec2((float) mouseX, (float) mouseY);
+    var distanceSq = center.distanceToSqr(mouse);
     return distanceSq < hitRadius * hitRadius && distanceSq > innerRadius * innerRadius;
   }
 
@@ -111,7 +111,7 @@ public class PizzaWidget implements Drawable, Element, Selectable {
   }
 
   @Override
-  public void appendNarrations(NarrationMessageBuilder builder) {}
+  public void updateNarration(NarrationElementOutput builder) {}
 
   public void setupHitRadius(int hitRadius) {
     this.hitRadius = hitRadius;

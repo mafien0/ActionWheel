@@ -8,17 +8,17 @@ import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import io.github.JumperOnJava.lavajumper.gui.widgets.ScrollListWidget;
 import java.util.LinkedList;
 import java.util.function.Consumer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
-public class TextureListAsk extends AskScreen<Identifier> {
+public class TextureListAsk extends AskScreen<ResourceLocation> {
   ScrollListWidget list;
   // private static Map<Identifier, AbstractTexture> textures;
-  private static java.util.List<Identifier> textures = new LinkedList<>();
+  private static java.util.List<ResourceLocation> textures = new LinkedList<>();
 
   static {
     var paths = new LinkedList<String>();
@@ -37,15 +37,15 @@ public class TextureListAsk extends AskScreen<Identifier> {
     paths.add("textures/gui/sprites/spectator");
     paths.add("textures/gui/sprites/statistics");
     for (var path : paths) {
-      var manager = MinecraftClient.getInstance().getResourceManager();
-      var resources = manager.findResources(path, i -> i.toString().endsWith(".png"));
+      var manager = Minecraft.getInstance().getResourceManager();
+      var resources = manager.listResources(path, i -> i.toString().endsWith(".png"));
       textures.addAll(resources.keySet().stream().toList());
     }
   }
 
-  private Identifier selectedTexture = Identifier.of("empty");
+  private ResourceLocation selectedTexture = ResourceLocation.parse("empty");
 
-  protected TextureListAsk(Consumer<Identifier> onSuccess, Runnable onFail) {
+  protected TextureListAsk(Consumer<ResourceLocation> onSuccess, Runnable onFail) {
     super(onSuccess, onFail);
   }
 
@@ -53,27 +53,27 @@ public class TextureListAsk extends AskScreen<Identifier> {
 
   @Override
   protected void init() {
-    list = new ScrollListWidget(client, width, height - 22 * 2, 0, 22, 40);
+    list = new ScrollListWidget(minecraft, width, height - 22 * 2, 0, 22, 40);
     filterList("");
-    addDrawableChild(list);
+    addRenderableWidget(list);
 
-    var search = new TextFieldWidget(client.textRenderer, 0, 0, width, 20, Text.empty());
-    search.setChangedListener(this::filterList);
-    addDrawableChild(search);
+    var search = new EditBox(minecraft.font, 0, 0, width, 20, Component.empty());
+    search.setResponder(this::filterList);
+    addRenderableWidget(search);
 
     var accept =
-        new ButtonWidget.Builder(Tr.get("jjpizza.texture.accept"), b -> success(selectedTexture))
-            .dimensions((int) (40 + gap), height - 20 - gap, 100, 20)
+        new Button.Builder(Tr.get("jjpizza.texture.accept"), b -> success(selectedTexture))
+            .bounds((int) (40 + gap), height - 20 - gap, 100, 20)
             .build();
     var cancel =
-        new ButtonWidget.Builder(Tr.get("jjpizza.texture.cancel"), b -> fail())
-            .dimensions((int) (140 + gap * 1.5), height - 20 - gap, 100, 20)
+        new Button.Builder(Tr.get("jjpizza.texture.cancel"), b -> fail())
+            .bounds((int) (140 + gap * 1.5), height - 20 - gap, 100, 20)
             .build();
-    addDrawableChild(accept);
-    addDrawableChild(cancel);
+    addRenderableWidget(accept);
+    addRenderableWidget(cancel);
     selectedTextureWidget =
-        new TextureWidget(Identifier.of(""), gap / 2, height - 40 - gap / 2, 40, 40);
-    addDrawableChild(selectedTextureWidget);
+        new TextureWidget(ResourceLocation.parse(""), gap / 2, height - 40 - gap / 2, 40, 40);
+    addRenderableWidget(selectedTextureWidget);
   }
 
   private void filterList(String s) {
@@ -83,13 +83,13 @@ public class TextureListAsk extends AskScreen<Identifier> {
       var id = key.toString();
       if (!id.toLowerCase().contains(s.toLowerCase())) continue;
       var button =
-          new ButtonWidget.Builder(
-                  Text.literal(id),
+          new Button.Builder(
+                  Component.literal(id),
                   b -> {
-                    this.selectedTexture = Identifier.of(b.getMessage().getString());
+                    this.selectedTexture = ResourceLocation.parse(b.getMessage().getString());
                     selectedTextureWidget.setTexture(selectedTexture);
                   })
-              .position(40, 10)
+              .pos(40, 10)
               .size(width - 40 - 6 - gap, 20)
               .build();
       var entry = new ScrollListWidget.ScrollListEntry();
@@ -100,11 +100,11 @@ public class TextureListAsk extends AskScreen<Identifier> {
   }
 
   @Override
-  public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
     renderBackground(context, mouseX, mouseY, delta);
     super.render(context, mouseX, mouseY, delta);
-    context.drawText(
-        textRenderer,
+    context.drawString(
+        font,
         Tr.get("jjpizza.texture.selected").append(": ").append(selectedTexture.toString()),
         45,
         height - 30 - 6 - gap / 2,
@@ -112,7 +112,7 @@ public class TextureListAsk extends AskScreen<Identifier> {
         true);
   }
 
-  public static class Builder extends AskScreen.Builder<Identifier> {
+  public static class Builder extends AskScreen.Builder<ResourceLocation> {
     @Override
     public TextureListAsk build() {
       return new TextureListAsk(onSuccess, onFail);

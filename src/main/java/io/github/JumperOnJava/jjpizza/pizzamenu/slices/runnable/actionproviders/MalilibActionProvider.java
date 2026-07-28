@@ -8,8 +8,8 @@ import fi.dy.masa.malilib.hotkeys.KeybindMulti;
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ConfigurableRunnable;
 import io.github.JumperOnJava.lavajumper.common.Tr;
 import java.util.*;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 public class MalilibActionProvider implements ConfigurableRunnable, TargetKeybindStorage {
   public static Set<String> awaitingMatch = new HashSet<>();
@@ -78,7 +78,7 @@ public class MalilibActionProvider implements ConfigurableRunnable, TargetKeybin
   }
 
   @Override
-  public Text getHoldText() {
+  public Component getHoldText() {
     return Tr.get("jjpizza.keybind.mali.hold." + keyActionType);
   }
 
@@ -110,12 +110,12 @@ public class MalilibActionProvider implements ConfigurableRunnable, TargetKeybin
     }
 
     @Override
-    public Text getButtonText() {
+    public Component getButtonText() {
       String categoryText = "";
       if (!singleCategoryInMod(category)) {
         categoryText = " %s".formatted(category.getCategory());
       }
-      return Text.literal(String.format("%s: %s", category.getModName(), hotkey.getName()));
+      return Component.literal(String.format("%s: %s", category.getModName(), hotkey.getName()));
     }
 
     @Override

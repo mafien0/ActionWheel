@@ -8,11 +8,11 @@ import io.github.JumperOnJava.jjpizza.pizzamenu.slices.ConfigurablePizzaSlice;
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionproviders.NullActionProvider;
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ConfigurableRunnable;
 import java.util.Random;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ColorHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 
 public class RunnableSlice implements ConfigurablePizzaSlice {
   @Expose CircleSlice circleSlice;
@@ -20,7 +20,7 @@ public class RunnableSlice implements ConfigurablePizzaSlice {
   @Expose int color;
   @Expose ConfigurableRunnable onLeftClick = new NullActionProvider(false);
   @Expose ConfigurableRunnable onRightClick = new NullActionProvider(false);
-  @Expose Identifier icon = Identifier.of("textures/item/diamond.png");
+  @Expose ResourceLocation icon = ResourceLocation.parse("textures/item/diamond.png");
 
   @Override
   public PizzaManager getManager() {
@@ -48,28 +48,28 @@ public class RunnableSlice implements ConfigurablePizzaSlice {
     this.name = name;
     setSlice(circleSlice);
     var r = new Random();
-    this.color = ColorHelper.getArgb(255, r.nextInt(255), r.nextInt(255), r.nextInt(255));
+    this.color = ARGB.color(255, r.nextInt(255), r.nextInt(255), r.nextInt(255));
     // ActionTextRenderer.sendChatMessage(Integer.toHexString(this.color));
     this.manager = manager;
   }
 
   @Override
   public void onLeftClick() {
-    MinecraftClient.getInstance().setScreen(null);
+    Minecraft.getInstance().setScreen(null);
     onLeftClick.run();
   }
 
   @Override
   public void onRightClick() {
-    MinecraftClient.getInstance().setScreen(null);
+    Minecraft.getInstance().setScreen(null);
     onRightClick.run();
   }
 
-  public Text getName() {
-    return Text.literal(name);
+  public Component getName() {
+    return Component.literal(name);
   }
 
-  public Identifier getIconTexture() {
+  public ResourceLocation getIconTexture() {
     return icon;
   }
 

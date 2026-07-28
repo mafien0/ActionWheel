@@ -12,11 +12,11 @@ import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SubScreen;
 import java.util.*;
 import java.util.function.Consumer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePizzaSlice>>
     implements ConfigActionApplier {
@@ -53,13 +53,13 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
   Runnable saveCallback;
 
   @Override
-  public boolean shouldPause() {
+  public boolean isPauseScreen() {
     return false;
   }
 
   @Override
-  public void close() {
-    super.close();
+  public void onClose() {
+    super.onClose();
   }
 
   public void setWidgetSlices(List<? extends EditorPizzaSlice> widgetSlices) {
@@ -79,8 +79,8 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
               }
 
               @Override
-              public Text getName() {
-                return Text.empty();
+              public Component getName() {
+                return Component.empty();
               }
 
               @Override
@@ -94,7 +94,7 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
               }
 
               @Override
-              public Identifier getIconTexture() {
+              public ResourceLocation getIconTexture() {
                 return null;
               }
             };
@@ -113,19 +113,19 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
     // deletePizza.setupSize((int) (radius/16*17), (int) radius,width/4,height/2);
     deletePizza.setupSize((int) (radius / 4), (int) radius / 8, width / 4, height / 2);
     deletePizza.setupSlices(deleteSlices);
-    addDrawableChild(pizza);
-    addDrawableChild(deletePizza);
+    addRenderableWidget(pizza);
+    addRenderableWidget(deletePizza);
     this.subScreen =
-        new SubScreen(width / 2, 0, width / 2, height).setScreen(new Screen(Text.empty()) {});
-    addDrawableChild(subScreen);
+        new SubScreen(width / 2, 0, width / 2, height).setScreen(new Screen(Component.empty()) {});
+    addRenderableWidget(subScreen);
     var hwidth = width / 2;
-    addDrawableChild(
-        new ButtonWidget.Builder(Tr.get("jjpizza.edit.save"), b -> this.success(editSlices))
-            .dimensions(gap / 2, height - 20 - gap / 2, hwidth / 2 - gap, 20)
+    addRenderableWidget(
+        new Button.Builder(Tr.get("jjpizza.edit.save"), b -> this.success(editSlices))
+            .bounds(gap / 2, height - 20 - gap / 2, hwidth / 2 - gap, 20)
             .build());
-    addDrawableChild(
-        new ButtonWidget.Builder(Tr.get("jjpizza.edit.cancel"), b -> this.fail())
-            .dimensions(gap / 2 + hwidth / 2, height - 20 - gap / 2, hwidth / 2 - gap, 20)
+    addRenderableWidget(
+        new Button.Builder(Tr.get("jjpizza.edit.cancel"), b -> this.fail())
+            .bounds(gap / 2 + hwidth / 2, height - 20 - gap / 2, hwidth / 2 - gap, 20)
             .build());
     rebuildSlices();
   }
@@ -134,7 +134,7 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
     this.subScreen.setScreen(screen);
   }
 
-  public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
     renderBackground(context, mouseX, mouseY, delta);
     super.render(context, mouseX, mouseY, delta);
   }
@@ -161,7 +161,7 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
 
   @Override
   public void initClose() {
-    if (this.client.currentScreen == this) this.client.setScreen(null);
+    if (this.minecraft.screen == this) this.minecraft.setScreen(null);
     else super.initClose();
   }
 

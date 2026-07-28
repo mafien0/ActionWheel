@@ -6,13 +6,13 @@ import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.C
 import io.github.JumperOnJava.lavajumper.common.Tr;
 import io.github.JumperOnJava.lavajumper.gui.widgets.ScrollListWidget;
 import java.util.*;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.text.Text;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
 
 public class KeybindingActionProvider implements ConfigurableRunnable, TargetKeybindStorage {
   public static Set<String> awaitingMatch = new HashSet<>();
@@ -22,9 +22,9 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
 
   public KeybindingActionProvider(Boolean isReal) {}
 
-  private KeyBinding getTargetKeyBinding() {
-    for (var kb : MinecraftClient.getInstance().options.allKeys) {
-      if (kb.getTranslationKey().equals(targetKeyBindingID)) return kb;
+  private KeyMapping getTargetKeyBinding() {
+    for (var kb : Minecraft.getInstance().options.keyMappings) {
+      if (kb.getName().equals(targetKeyBindingID)) return kb;
     }
     return null;
   }
@@ -53,17 +53,17 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
     var targetKeyBinding = getTargetKeyBinding();
     if (targetKeyBinding == null) return;
     if (hold) {
-      targetKeyBinding.setPressed(!targetKeyBinding.isPressed());
+      targetKeyBinding.setDown(!targetKeyBinding.isDown());
     } else {
       awaitingMatch.add(targetKeyBindingID);
-      targetKeyBinding.timesPressed++;
-      var client = MinecraftClient.getInstance();
-      client.keyboard.onKey(client.getWindow().getHandle(), -1, -1, 1, -1);
+      targetKeyBinding.clickCount++;
+      var client = Minecraft.getInstance();
+      client.keyboardHandler.keyPress(client.getWindow().getWindow(), -1, -1, 1, -1);
     }
   }
 
   public List<TargetKeybind> getKeyBindings() {
-    var l = MinecraftClient.getInstance().options.allKeys;
+    var l = Minecraft.getInstance().options.keyMappings;
     List<TargetKeybind> keybinds = new ArrayList<>();
     for (var k : l) {
       keybinds.add(new VanillaKBWrapper(k));
@@ -82,7 +82,7 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
   }
 
   @Override
-  public Text getHoldText() {
+  public Component getHoldText() {
     return Tr.get("jjpizza.keybind.hold." + (hold ? "on" : "off"));
   }
 
@@ -91,32 +91,32 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
     hold = !hold;
     var targetKeyBinding = getTargetKeyBinding();
     if (targetKeyBinding == null) return;
-    targetKeyBinding.reset();
+    targetKeyBinding.release();
   }
 
   private static class VanillaKBWrapper implements TargetKeybind {
-    private final KeyBinding keybind;
+    private final KeyMapping keybind;
 
-    public VanillaKBWrapper(KeyBinding binding) {
+    public VanillaKBWrapper(KeyMapping binding) {
       this.keybind = binding;
     }
 
-    public Text getButtonText() {
-      return Text.translatable(keybind.getCategory())
+    public Component getButtonText() {
+      return Component.translatable(keybind.getCategory())
           .append(" : ")
-          .append(Text.translatable(keybind.getTranslationKey()));
+          .append(Component.translatable(keybind.getName()));
     }
 
     @Override
     public String getId() {
-      return keybind.getTranslationKey();
+      return keybind.getName();
     }
 
     @Override
     public boolean matches(String search) {
       search = search.toLowerCase();
-      return keybind.getTranslationKey().toLowerCase().contains(search)
-          || I18n.translate(keybind.getTranslationKey()).toLowerCase().contains(search);
+      return keybind.getName().toLowerCase().contains(search)
+          || I18n.get(keybind.getName()).toLowerCase().contains(search);
     }
   }
 
@@ -124,23 +124,23 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
     private final TargetKeybindStorage target;
 
     protected KeyBindingEditScreen(TargetKeybindStorage target) {
-      super(Text.empty());
+      super(Component.empty());
       this.target = target;
     }
 
     public void init() {
-      var listWidget = new ScrollListWidget(client, width, height - 24 * 2, 0, 24, 22);
-      var searchBox = new TextFieldWidget(client.textRenderer, 2, 2, width - 4, 20, Text.empty());
-      searchBox.setChangedListener(t -> rebuildList(listWidget, t));
-      addDrawableChild(searchBox);
-      addDrawableChild(listWidget);
+      var listWidget = new ScrollListWidget(minecraft, width, height - 24 * 2, 0, 24, 22);
+      var searchBox = new EditBox(minecraft.font, 2, 2, width - 4, 20, Component.empty());
+      searchBox.setResponder(t -> rebuildList(listWidget, t));
+      addRenderableWidget(searchBox);
+      addRenderableWidget(listWidget);
       rebuildList(listWidget, "");
       var holdModeButton =
-          new ButtonWidget.Builder(target.getHoldText(), this::holdButton)
+          new Button.Builder(target.getHoldText(), this::holdButton)
               .size(width - ActionTypeRegistry.gap / 2, 20)
-              .position(0, height - 20 - ActionTypeRegistry.gap / 2)
+              .pos(0, height - 20 - ActionTypeRegistry.gap / 2)
               .build();
-      addDrawableChild(holdModeButton);
+      addRenderableWidget(holdModeButton);
     }
 
     private void rebuildList(ScrollListWidget listWidget, String s) {
@@ -150,9 +150,9 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
         if (!keybind.matches(s)) continue;
         var listEntry = new ScrollListWidget.ScrollListEntry();
         listWidget.addEntry(listEntry);
-        Text buttonText = keybind.getButtonText();
+        Component buttonText = keybind.getButtonText();
         var activateButton =
-            new ButtonWidget.Builder(
+            new Button.Builder(
                     buttonText,
                     b -> {
                       listEntry.setMeActive();
@@ -165,7 +165,7 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
       }
     }
 
-    private void holdButton(ButtonWidget buttonWidget) {
+    private void holdButton(Button buttonWidget) {
       target.nextHoldMode();
       buttonWidget.setMessage(target.getHoldText());
     }

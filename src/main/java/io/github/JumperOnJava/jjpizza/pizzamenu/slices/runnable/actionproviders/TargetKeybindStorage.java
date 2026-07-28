@@ -1,7 +1,7 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionproviders;
 
 import java.util.Collection;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public interface TargetKeybindStorage {
   Collection<TargetKeybind> getKeyBindings();
@@ -10,7 +10,7 @@ public interface TargetKeybindStorage {
 
   String getTargetId();
 
-  Text getHoldText();
+  Component getHoldText();
 
   void nextHoldMode();
 }

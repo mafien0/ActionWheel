@@ -11,28 +11,28 @@ import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SliderWidget;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SubScreen;
 import java.util.function.Consumer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.InvalidIdentifierException;
-import net.minecraft.util.math.ColorHelper;
+import net.minecraft.ResourceLocationException;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 
 public class RunnableScreen extends Screen {
   RunnableSlice pizzaAction;
   Runnable updateCallback;
 
   public RunnableScreen(RunnableSlice pizzaAction, Runnable updateCallback) {
-    super(Text.empty());
+    super(Component.empty());
     this.pizzaAction = pizzaAction;
     this.updateCallback = updateCallback;
   }
 
   public void init() {
-    var client = this.client;
+    var client = this.minecraft;
     initDrawConfig();
     initColorConfig();
     initConfigSubScreens();
@@ -41,7 +41,7 @@ public class RunnableScreen extends Screen {
   private void initConfigSubScreens() {
     var configScreen = new SubScreen(0, gap * 3 + 20 * 3, width, height - (gap * 3 + 20 * 2));
     configScreen.setScreen(new ActionEditScreen(pizzaAction));
-    addDrawableChild(configScreen);
+    addRenderableWidget(configScreen);
   }
 
   private void initColorConfig() {
@@ -71,76 +71,76 @@ public class RunnableScreen extends Screen {
               {
                 try {
                   int[] argb = {0, 0, 0, 0};
-                  argb[0] = ColorHelper.getAlpha(pizzaAction.color);
-                  argb[1] = ColorHelper.getRed(pizzaAction.color);
-                  argb[2] = ColorHelper.getGreen(pizzaAction.color);
-                  argb[3] = ColorHelper.getBlue(pizzaAction.color);
+                  argb[0] = ARGB.alpha(pizzaAction.color);
+                  argb[1] = ARGB.red(pizzaAction.color);
+                  argb[2] = ARGB.green(pizzaAction.color);
+                  argb[3] = ARGB.blue(pizzaAction.color);
 
                   argb[id] = (int) (double) d;
 
-                  pizzaAction.color = ColorHelper.getArgb(argb[0], argb[1], argb[2], argb[3]);
+                  pizzaAction.color = ARGB.color(argb[0], argb[1], argb[2], argb[3]);
                   update();
                 } catch (Exception ignored) {
 
                 }
               }
-              addDrawableChild(colorField);
+              addRenderableWidget(colorField);
             }
           };
       cons.id = i;
       colorField.setChangedListener(cons);
-      addDrawableChild(colorField);
+      addRenderableWidget(colorField);
     }
   }
 
   private void initDrawConfig() {
 
     var nameField =
-        new TextFieldWidget(
-            client.textRenderer, gap, gap, width / 4 - gap, 16, Text.translatable("Name"));
-    nameField.setText(pizzaAction.name);
-    nameField.setChangedListener(
+        new EditBox(
+            minecraft.font, gap, gap, width / 4 - gap, 16, Component.translatable("Name"));
+    nameField.setValue(pizzaAction.name);
+    nameField.setResponder(
         s -> {
           pizzaAction.name = s;
           update();
         });
-    addDrawableChild(nameField);
+    addRenderableWidget(nameField);
     var iconField =
-        new TextFieldWidget(
-            client.textRenderer,
+        new EditBox(
+            minecraft.font,
             gap + width / 4,
             gap,
             width / 4 * 2 - gap * 2,
             16,
-            Text.translatable("Name"));
+            Component.translatable("Name"));
     iconField.setMaxLength(Integer.MAX_VALUE);
-    iconField.setText(pizzaAction.icon.toString());
-    iconField.setChangedListener(
+    iconField.setValue(pizzaAction.icon.toString());
+    iconField.setResponder(
         s -> {
           try {
-            pizzaAction.icon = Identifier.of(s);
-          } catch (InvalidIdentifierException e) {
-            iconField.setEditableColor(0xffff7057);
+            pizzaAction.icon = ResourceLocation.parse(s);
+          } catch (ResourceLocationException e) {
+            iconField.setTextColor(0xffff7057);
           } finally {
-            iconField.setEditableColor(0xffe0e0e0);
+            iconField.setTextColor(0xffe0e0e0);
           }
           update();
         });
-    addDrawableChild(iconField);
+    addRenderableWidget(iconField);
     var iconSelectField =
-        new ButtonWidget.Builder(
+        new Button.Builder(
                 Tr.get("jjpizza.runnable.iconselect"),
                 b -> {
                   AskScreen.ask(
                       new TextureListAsk.Builder()
-                          .onSuccess(i -> iconField.setText(i.toString()))
+                          .onSuccess(i -> iconField.setValue(i.toString()))
                           .onFail(() -> {})
                           .build());
                 })
-            .position(width / 4 * 3, gap / 2)
+            .pos(width / 4 * 3, gap / 2)
             .size(width / 4, 20)
             .build();
-    addDrawableChild(iconSelectField);
+    addRenderableWidget(iconSelectField);
 
     var startAngleField =
         new SliderWidget(
@@ -159,7 +159,7 @@ public class RunnableScreen extends Screen {
                   Angle.newDegree((float) (double) d), pizzaAction.getSlice().endAngle));
           update();
         });
-    addDrawableChild(startAngleField);
+    addRenderableWidget(startAngleField);
     var endAngleField =
         new SliderWidget(
             gap + width / 2,
@@ -177,11 +177,11 @@ public class RunnableScreen extends Screen {
                   pizzaAction.circleSlice.startAngle, Angle.newDegree((float) (double) d)));
           update();
         });
-    addDrawableChild(endAngleField);
+    addRenderableWidget(endAngleField);
   }
 
   @Override
-  public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
     renderBackground(context, mouseX, mouseY, delta);
     super.render(context, mouseX, mouseY, delta);
   }
@@ -190,7 +190,7 @@ public class RunnableScreen extends Screen {
     updateCallback.run();
   }
 
-  public static void setButtonType(ButtonWidget button, ConfigurableRunnable obj) {
+  public static void setButtonType(Button button, ConfigurableRunnable obj) {
     button.setMessage(Tr.get("jjpizza.actions." + obj.getClass().getSimpleName()));
   }
 }

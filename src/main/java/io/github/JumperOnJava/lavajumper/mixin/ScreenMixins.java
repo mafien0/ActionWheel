@@ -3,9 +3,9 @@ package io.github.JumperOnJava.lavajumper.mixin;
 import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SubScreen;
 import java.util.Iterator;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,22 +22,22 @@ public class ScreenMixins {
               value = "INVOKE",
               shift = At.Shift.AFTER,
               target =
-                  "Lnet/minecraft/client/gui/Drawable;render(Lnet/minecraft/client/gui/DrawContext;IIF)V"),
+                  "Lnet/minecraft/client/gui/components/Renderable;render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"),
       locals = LocalCapture.CAPTURE_FAILHARD)
   public void cancelRenderAfterOverlay(
-      DrawContext context,
+      GuiGraphics context,
       int mouseX,
       int mouseY,
       float delta,
       CallbackInfo ci,
-      Iterator<Drawable> var5,
-      Drawable drawable) {
+      Iterator<Renderable> var5,
+      Renderable drawable) {
     if (drawable instanceof AskScreen.OverlayScreen) {
       while (var5.hasNext()) var5.next();
     }
   }
 
-  @Inject(method = "applyBlur", at = @At("HEAD"), cancellable = true)
+  @Inject(method = "renderBlurredBackground", at = @At("HEAD"), cancellable = true)
   public void disableBlur(CallbackInfo ci) {
     if (SubScreen.blurDisabled) {
       ci.cancel();

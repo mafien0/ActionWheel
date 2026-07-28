@@ -4,15 +4,19 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.gui.navigation.GuiNavigation;
-import net.minecraft.client.gui.navigation.GuiNavigationPath;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.LayoutElement;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -20,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
  * method to set/change screen in widget. When screen is not set up or equals null widget will
  * display empty screen with random color and "nullSubScreen" text in center
  */
-public class SubScreen implements Drawable, ParentElement, Selectable, Widget {
+public class SubScreen implements Renderable, ContainerEventHandler, NarratableEntry, LayoutElement {
   public static boolean blurDisabled = false;
   private Screen screen;
   private int x, y, width, height;
@@ -41,22 +45,22 @@ public class SubScreen implements Drawable, ParentElement, Selectable, Widget {
   public SubScreen setScreen(Screen screen) {
     if (screen == null) screen = new NullSubScreen();
     this.screen = screen;
-    screen.init(MinecraftClient.getInstance(), width, height);
+    screen.init(Minecraft.getInstance(), width, height);
     return this;
   }
 
   @Override
-  public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-    context.getMatrices().push();
-    context.getMatrices().translate(x, y, 0);
+  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    context.pose().pushPose();
+    context.pose().translate(x, y, 0);
     blurDisabled = true;
     screen.render(context, mouseX - x, mouseY - y, delta);
     blurDisabled = false;
-    context.getMatrices().pop();
+    context.pose().popPose();
   }
 
   @Override
-  public void appendNarrations(NarrationMessageBuilder builder) {}
+  public void updateNarration(NarrationElementOutput builder) {}
 
   @Override
   public void mouseMoved(double mouseX, double mouseY) {
@@ -64,13 +68,13 @@ public class SubScreen implements Drawable, ParentElement, Selectable, Widget {
   }
 
   @Override
-  public List<? extends Element> children() {
+  public List<? extends GuiEventListener> children() {
     return screen.children();
   }
 
   @Override
-  public Optional<Element> hoveredElement(double mouseX, double mouseY) {
-    return screen.hoveredElement(mouseX, mouseY);
+  public Optional<GuiEventListener> getChildAt(double mouseX, double mouseY) {
+    return screen.getChildAt(mouseX, mouseY);
   }
 
   @Override
@@ -122,45 +126,45 @@ public class SubScreen implements Drawable, ParentElement, Selectable, Widget {
 
   @Nullable
   @Override
-  public Element getFocused() {
+  public GuiEventListener getFocused() {
     return screen.getFocused();
   }
 
   @Override
-  public void setFocused(@Nullable Element focused) {
+  public void setFocused(@Nullable GuiEventListener focused) {
     screen.setFocused(focused);
   }
 
   @Override
   public void setFocused(boolean focused) {
-    ParentElement.super.setFocused(focused);
+    ContainerEventHandler.super.setFocused(focused);
   }
 
   @Override
   public boolean isFocused() {
-    return ParentElement.super.isFocused();
+    return ContainerEventHandler.super.isFocused();
   }
 
   @Nullable
   @Override
-  public GuiNavigationPath getFocusedPath() {
-    return ParentElement.super.getFocusedPath();
+  public ComponentPath getCurrentFocusPath() {
+    return ContainerEventHandler.super.getCurrentFocusPath();
   }
 
   @Override
-  public ScreenRect getNavigationFocus() {
-    return ParentElement.super.getNavigationFocus();
+  public ScreenRectangle getRectangle() {
+    return ContainerEventHandler.super.getRectangle();
   }
 
   @Override
   public void setPosition(int x, int y) {
-    Widget.super.setPosition(x, y);
+    LayoutElement.super.setPosition(x, y);
   }
 
   @Nullable
   @Override
-  public GuiNavigationPath getNavigationPath(GuiNavigation navigation) {
-    return ParentElement.super.getNavigationPath(navigation);
+  public ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
+    return ContainerEventHandler.super.nextFocusPath(navigation);
   }
 
   @Override
@@ -172,13 +176,13 @@ public class SubScreen implements Drawable, ParentElement, Selectable, Widget {
   }
 
   @Override
-  public SelectionType getType() {
-    return SelectionType.NONE;
+  public NarrationPriority narrationPriority() {
+    return NarrationPriority.NONE;
   }
 
   @Override
-  public boolean isNarratable() {
-    return Selectable.super.isNarratable();
+  public boolean isActive() {
+    return NarratableEntry.super.isActive();
   }
 
   @Override
@@ -212,20 +216,20 @@ public class SubScreen implements Drawable, ParentElement, Selectable, Widget {
   }
 
   @Override
-  public void forEachChild(Consumer<ClickableWidget> consumer) {}
+  public void visitWidgets(Consumer<AbstractWidget> consumer) {}
 
   @Override
-  public int getNavigationOrder() {
-    return ParentElement.super.getNavigationOrder();
+  public int getTabOrderGroup() {
+    return ContainerEventHandler.super.getTabOrderGroup();
   }
 
   private class NullSubScreen extends Screen {
     public NullSubScreen() {
-      super(Text.empty());
+      super(Component.empty());
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
       super.render(context, mouseX, mouseY, delta);
       RenderSystem.enableBlend();
       context.fill(
@@ -235,8 +239,8 @@ public class SubScreen implements Drawable, ParentElement, Selectable, Widget {
           height,
           (int) (Math.pow(x + width + y + height, 5f) % Integer.MAX_VALUE) & 0x00FFFFFF
               | 0x3F000000);
-      context.drawCenteredTextWithShadow(
-          MinecraftClient.getInstance().textRenderer,
+      context.drawCenteredString(
+          Minecraft.getInstance().font,
           "nullSubScreen",
           width / 2,
           height / 2,

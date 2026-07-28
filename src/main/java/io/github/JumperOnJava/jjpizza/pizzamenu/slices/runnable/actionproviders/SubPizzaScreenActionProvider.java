@@ -10,12 +10,12 @@ import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import io.github.JumperOnJava.lavajumper.gui.widgets.ScrollListWidget;
 import java.util.Random;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 
 public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
   private String id = "";
@@ -38,7 +38,7 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
   @Override
   public void run() {
     makeSurePizzaExists();
-    pizza.openPizza(MinecraftClient.getInstance());
+    pizza.openPizza(Minecraft.getInstance());
   }
 
   private void makeSurePizzaExists() {
@@ -56,37 +56,37 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
     private ScrollListWidget list;
 
     protected SubPizzaEditScreen(SubPizzaScreenActionProvider target) {
-      super(Text.empty());
+      super(Component.empty());
       this.target = target;
     }
 
-    TextFieldWidget nameBox;
+    EditBox nameBox;
 
     public void init() {
 
       var button =
-          new ButtonWidget.Builder(Tr.get("jjpizza.subpizza.edit"), this::editSelectedPizza)
-              .dimensions(width / 2 + gap / 2, gap / 2, width / 2 - gap, 20)
+          new Button.Builder(Tr.get("jjpizza.subpizza.edit"), this::editSelectedPizza)
+              .bounds(width / 2 + gap / 2, gap / 2, width / 2 - gap, 20)
               .build();
       button.active = false;
-      addDrawableChild(button);
+      addRenderableWidget(button);
 
       nameBox =
-          new TextFieldWidget(
-              client.textRenderer, gap / 2, gap / 2, width / 2 - gap, 20, Text.empty());
-      nameBox.setText(target.id);
-      nameBox.setChangedListener(
+          new EditBox(
+              minecraft.font, gap / 2, gap / 2, width / 2 - gap, 20, Component.empty());
+      nameBox.setValue(target.id);
+      nameBox.setResponder(
           s -> {
             updatePizzaId(s);
             button.active = s != null && !s.isBlank();
           });
-      nameBox.setPlaceholder(Tr.get("jjpizza.subpizza.placeholder").withColor(Colors.GRAY));
-      addDrawableChild(nameBox);
+      nameBox.setHint(Tr.get("jjpizza.subpizza.placeholder").withColor(CommonColors.GRAY));
+      addRenderableWidget(nameBox);
 
       this.list =
           new ScrollListWidget(
-              client, width - gap, height - gap - 2, gap / 2, 22 + gap / 2, 20 + gap / 2);
-      addDrawableChild(list);
+              minecraft, width - gap, height - gap - 2, gap / 2, 22 + gap / 2, 20 + gap / 2);
+      addRenderableWidget(list);
       updateList();
     }
 
@@ -103,32 +103,32 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
         var filename = file.getName().replace(".json", "");
         var entry = new ScrollListWidget.ScrollListEntry();
         entry.addDrawableChild(
-            new ButtonWidget.Builder(
-                    Text.literal(filename),
+            new Button.Builder(
+                    Component.literal(filename),
                     (b) -> {
                       target.id = filename;
-                      nameBox.setText(target.id);
+                      nameBox.setValue(target.id);
                     })
-                .dimensions(gap / 2, 0, width - 40 - gap / 2, 20)
+                .bounds(gap / 2, 0, width - 40 - gap / 2, 20)
                 .build(),
             false);
         entry.addDrawableChild(
-            new ButtonWidget.Builder(
-                    Text.literal("X"),
+            new Button.Builder(
+                    Component.literal("X"),
                     b -> {
                       file.delete();
                       updateList();
                     })
-                .dimensions(width - 40 + gap / 2, 0, 20, 20)
+                .bounds(width - 40 + gap / 2, 0, 20, 20)
                 .build(),
             false);
         list.addEntry(entry);
       }
     }
 
-    private void select(ButtonWidget buttonWidget) {}
+    private void select(Button buttonWidget) {}
 
-    private void editSelectedPizza(ButtonWidget buttonWidget) {
+    private void editSelectedPizza(Button buttonWidget) {
       target.makeSurePizzaExists();
       AskScreen.ask(target.pizza.getBuilderScreen((c) -> updateList(), this::updateList));
     }

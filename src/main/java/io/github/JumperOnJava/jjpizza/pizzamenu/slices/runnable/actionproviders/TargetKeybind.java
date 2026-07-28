@@ -1,9 +1,9 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionproviders;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public interface TargetKeybind {
-  Text getButtonText();
+  Component getButtonText();
 
   String getId();
 

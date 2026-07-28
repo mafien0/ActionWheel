@@ -1,19 +1,19 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu.widgets;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 
-public class TextureWidget implements Drawable, Selectable, Element {
-  public Identifier getTexture() {
+public class TextureWidget implements Renderable, NarratableEntry, GuiEventListener {
+  public ResourceLocation getTexture() {
     return texture;
   }
 
-  public void setTexture(Identifier texture) {
+  public void setTexture(ResourceLocation texture) {
     this.texture = texture;
   }
 
@@ -49,13 +49,13 @@ public class TextureWidget implements Drawable, Selectable, Element {
     this.height = height;
   }
 
-  private Identifier texture;
+  private ResourceLocation texture;
   private int x;
   private int y;
   private int width;
   private int height;
 
-  public TextureWidget(Identifier texture, int x, int y, int width, int height) {
+  public TextureWidget(ResourceLocation texture, int x, int y, int width, int height) {
     this.texture = texture;
     this.x = x;
     this.y = y;
@@ -64,9 +64,9 @@ public class TextureWidget implements Drawable, Selectable, Element {
   }
 
   @Override
-  public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-    context.drawTexture(
-        RenderLayer::getGuiTexturedOverlay, texture, x, y, 0, 0, width, height, width, height);
+  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    context.blit(
+        RenderType::guiTexturedOverlay, texture, x, y, 0, 0, width, height, width, height);
   }
 
   @Override
@@ -78,10 +78,10 @@ public class TextureWidget implements Drawable, Selectable, Element {
   }
 
   @Override
-  public SelectionType getType() {
-    return SelectionType.NONE;
+  public NarrationPriority narrationPriority() {
+    return NarrationPriority.NONE;
   }
 
   @Override
-  public void appendNarrations(NarrationMessageBuilder builder) {}
+  public void updateNarration(NarrationElementOutput builder) {}
 }

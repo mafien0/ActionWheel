@@ -5,10 +5,10 @@ import static io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionreg
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.ConfigurablePizzaSlice;
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ConfigurableRunnable;
 import io.github.JumperOnJava.lavajumper.common.Tr;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 public class ChatMessageActionProvider implements ConfigurableRunnable {
   private String message = "Hello, world!";
@@ -34,32 +34,32 @@ public class ChatMessageActionProvider implements ConfigurableRunnable {
 
   @Override
   public void run() {
-    var n = MinecraftClient.getInstance().getNetworkHandler();
-    if (message.startsWith("/")) n.sendChatCommand(message.substring(1));
-    else n.sendChatMessage(message);
+    var n = Minecraft.getInstance().getConnection();
+    if (message.startsWith("/")) n.sendCommand(message.substring(1));
+    else n.sendChat(message);
   }
 
   static class ChatMessageEditScreen extends Screen {
     private final ChatMessageActionProvider target;
 
     protected ChatMessageEditScreen(ChatMessageActionProvider target) {
-      super(Text.empty());
+      super(Component.empty());
       this.target = target;
     }
 
     protected void init() {
       var field =
-          new TextFieldWidget(
-              MinecraftClient.getInstance().textRenderer,
+          new EditBox(
+              Minecraft.getInstance().font,
               gap / 2,
               gap / 2,
               width - gap,
               20,
               Tr.get("jjpizza.chat.messagehere"));
       field.setMaxLength(255);
-      field.setText(target.message);
-      field.setChangedListener(s -> target.message = s);
-      addDrawableChild(field);
+      field.setValue(target.message);
+      field.setResponder(s -> target.message = s);
+      addRenderableWidget(field);
     }
   }
 }

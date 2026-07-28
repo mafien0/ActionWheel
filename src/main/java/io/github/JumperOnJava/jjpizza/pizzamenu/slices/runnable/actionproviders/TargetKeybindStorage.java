@@ -1,16 +1,16 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionproviders;
 
+import java.util.Collection;
 import net.minecraft.text.Text;
 
-import java.util.Collection;
-
 public interface TargetKeybindStorage {
-    Collection<TargetKeybind> getKeyBindings();
-    void setTargetID(String id);
+  Collection<TargetKeybind> getKeyBindings();
 
-    String getTargetId();
+  void setTargetID(String id);
 
-    Text getHoldText();
+  String getTargetId();
 
-    void nextHoldMode();
+  Text getHoldText();
+
+  void nextHoldMode();
 }

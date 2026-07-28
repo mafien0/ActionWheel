@@ -11,15 +11,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(KeyBinding.class)
 public class FakeKeyBindMatchMixin {
-    @Shadow @Final private String translationKey;
+  @Shadow @Final private String translationKey;
 
-    @Inject(method = "matchesKey",at = @At("HEAD"),cancellable = true)
-    private void matchIfQueued(int keyCode, int scanCode, CallbackInfoReturnable<Boolean> cir){
-        var id = this.translationKey;
-        if(KeybindingActionProvider.awaitingMatch.contains(this.translationKey)){
-            cir.setReturnValue(true);
-        }
-        KeybindingActionProvider.awaitingMatch.remove(id);
+  @Inject(method = "matchesKey", at = @At("HEAD"), cancellable = true)
+  private void matchIfQueued(int keyCode, int scanCode, CallbackInfoReturnable<Boolean> cir) {
+    var id = this.translationKey;
+    if (KeybindingActionProvider.awaitingMatch.contains(this.translationKey)) {
+      cir.setReturnValue(true);
     }
-
+    KeybindingActionProvider.awaitingMatch.remove(id);
+  }
 }

@@ -1,11 +1,14 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionproviders;
 
+import static io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ActionTypeRegistry.gap;
+
 import io.github.JumperOnJava.jjpizza.pizzamenu.SubPizzaManager;
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ConfigurableRunnable;
 import io.github.JumperOnJava.lavajumper.common.FileReadWrite;
 import io.github.JumperOnJava.lavajumper.common.Tr;
 import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import io.github.JumperOnJava.lavajumper.gui.widgets.ScrollListWidget;
+import java.util.Random;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -14,115 +17,124 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 
-import java.util.Random;
-
-import static io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ActionTypeRegistry.gap;
-
 public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
-    private String id = "";
-    private transient SubPizzaManager pizza;
+  private String id = "";
+  private transient SubPizzaManager pizza;
 
-    public SubPizzaScreenActionProvider(Boolean aBoolean) {
+  public SubPizzaScreenActionProvider(Boolean aBoolean) {}
+
+  @Override
+  public Screen getConfiguratorScreen() {
+    return new SubPizzaEditScreen(this);
+  }
+
+  @Override
+  public ConfigurableRunnable copy() {
+    var sp = new SubPizzaScreenActionProvider(true);
+    sp.id = id;
+    return sp;
+  }
+
+  @Override
+  public void run() {
+    makeSurePizzaExists();
+    pizza.openPizza(MinecraftClient.getInstance());
+  }
+
+  private void makeSurePizzaExists() {
+    if (id.equals("")) {
+      id = "Randomname-" + new Random().nextInt(0, 0xFFFF);
     }
 
-    @Override
-    public Screen getConfiguratorScreen() {
-        return new SubPizzaEditScreen(this);
+    if (pizza == null || !id.equals(pizza.id)) {
+      pizza = new SubPizzaManager(id);
+    }
+  }
+
+  private static class SubPizzaEditScreen extends Screen {
+    private final SubPizzaScreenActionProvider target;
+    private ScrollListWidget list;
+
+    protected SubPizzaEditScreen(SubPizzaScreenActionProvider target) {
+      super(Text.empty());
+      this.target = target;
     }
 
-    @Override
-    public ConfigurableRunnable copy() {
-        var sp = new SubPizzaScreenActionProvider(true);
-        sp.id=id;
-        return sp;
+    TextFieldWidget nameBox;
+
+    public void init() {
+
+      var button =
+          new ButtonWidget.Builder(Tr.get("jjpizza.subpizza.edit"), this::editSelectedPizza)
+              .dimensions(width / 2 + gap / 2, gap / 2, width / 2 - gap, 20)
+              .build();
+      button.active = false;
+      addDrawableChild(button);
+
+      nameBox =
+          new TextFieldWidget(
+              client.textRenderer, gap / 2, gap / 2, width / 2 - gap, 20, Text.empty());
+      nameBox.setText(target.id);
+      nameBox.setChangedListener(
+          s -> {
+            updatePizzaId(s);
+            button.active = s != null && !s.isBlank();
+          });
+      nameBox.setPlaceholder(Tr.get("jjpizza.subpizza.placeholder").withColor(Colors.GRAY));
+      addDrawableChild(nameBox);
+
+      this.list =
+          new ScrollListWidget(
+              client, width - gap, height - gap - 2, gap / 2, 22 + gap / 2, 20 + gap / 2);
+      addDrawableChild(list);
+      updateList();
     }
 
-    @Override
-    public void run() {
-        makeSurePizzaExists();
-        pizza.openPizza(MinecraftClient.getInstance());
+    private void updateList() {
+      FileReadWrite.write(
+          FabricLoader.getInstance().getConfigDir().resolve("jjpizza/sub/hackfile.txt").toFile(),
+          "borgir");
+      var dir = FabricLoader.getInstance().getConfigDir().resolve("jjpizza/sub").toFile();
+      var files = dir.listFiles();
+      if (files == null) return;
+      list.children().clear();
+      for (var file : files) {
+        if (!file.getName().endsWith(".json")) continue;
+        var filename = file.getName().replace(".json", "");
+        var entry = new ScrollListWidget.ScrollListEntry();
+        entry.addDrawableChild(
+            new ButtonWidget.Builder(
+                    Text.literal(filename),
+                    (b) -> {
+                      target.id = filename;
+                      nameBox.setText(target.id);
+                    })
+                .dimensions(gap / 2, 0, width - 40 - gap / 2, 20)
+                .build(),
+            false);
+        entry.addDrawableChild(
+            new ButtonWidget.Builder(
+                    Text.literal("X"),
+                    b -> {
+                      file.delete();
+                      updateList();
+                    })
+                .dimensions(width - 40 + gap / 2, 0, 20, 20)
+                .build(),
+            false);
+        list.addEntry(entry);
+      }
     }
 
-    private void makeSurePizzaExists() {
-        if(id.equals("")){
-            id = "Randomname-" + new Random().nextInt(0,0xFFFF);
-        }
+    private void select(ButtonWidget buttonWidget) {}
 
-        if(pizza==null || !id.equals(pizza.id)){
-            pizza = new SubPizzaManager(id);
-        }
+    private void editSelectedPizza(ButtonWidget buttonWidget) {
+      target.makeSurePizzaExists();
+      AskScreen.ask(target.pizza.getBuilderScreen((c) -> updateList(), this::updateList));
     }
 
-    private static class SubPizzaEditScreen extends Screen {
-        private final SubPizzaScreenActionProvider target;
-        private ScrollListWidget list;
-
-        protected SubPizzaEditScreen(SubPizzaScreenActionProvider target) {
-            super(Text.empty());
-            this.target = target;
-        }
-
-
-        TextFieldWidget nameBox;
-        public void init() {
-
-            var button = new ButtonWidget.Builder(Tr.get("jjpizza.subpizza.edit"),this::editSelectedPizza)
-                    .dimensions(width/2+gap/2,gap/2,width/2-gap,20)
-                    .build();
-            button.active=false;
-            addDrawableChild(button);
-
-            nameBox = new TextFieldWidget(client.textRenderer, gap/2, gap/2, width/2-gap, 20, Text.empty());
-            nameBox.setText(target.id);
-            nameBox.setChangedListener(s -> {
-                updatePizzaId(s);
-                button.active = s != null && !s.isBlank();
-            });
-            nameBox.setPlaceholder(Tr.get("jjpizza.subpizza.placeholder").withColor(Colors.GRAY));
-            addDrawableChild(nameBox);
-
-            this.list = new ScrollListWidget(client,width-gap,height-gap-2,gap/2,22+gap/2,20+gap/2);
-            addDrawableChild(list);
-            updateList();
-        }
-
-        private void updateList() {
-            FileReadWrite.write(FabricLoader.getInstance().getConfigDir().resolve("jjpizza/sub/hackfile.txt").toFile(),"borgir");
-            var dir = FabricLoader.getInstance().getConfigDir().resolve("jjpizza/sub").toFile();
-            var files = dir.listFiles();
-            if(files == null)
-                return;
-            list.children().clear();
-            for(var file : files){
-                if(!file.getName().endsWith(".json"))
-                    continue;
-                var filename = file.getName().replace(".json","");
-                var entry = new ScrollListWidget.ScrollListEntry();
-                entry.addDrawableChild(new ButtonWidget.Builder(Text.literal(filename),(b)->{
-                    target.id = filename;
-                    nameBox.setText(target.id);
-                }).dimensions(gap/2,0,width-40-gap/2,20).build(),false);
-                entry.addDrawableChild(new ButtonWidget.Builder(Text.literal("X"),b->{
-                    file.delete();
-                    updateList();
-                }).dimensions(width-40+gap/2,0,20,20).build(),false);
-                list.addEntry(entry);
-            }
-        }
-
-        private void select(ButtonWidget buttonWidget) {
-
-        }
-
-        private void editSelectedPizza(ButtonWidget buttonWidget) {
-            target.makeSurePizzaExists();
-            AskScreen.ask(target.pizza.getBuilderScreen((c)->updateList(), this::updateList));
-        }
-
-        private void updatePizzaId(String s) {
-            target.id = s;
-        }
-
-
+    private void updatePizzaId(String s) {
+      target.id = s;
     }
+  }
 }

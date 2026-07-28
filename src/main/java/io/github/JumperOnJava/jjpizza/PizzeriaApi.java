@@ -7,14 +7,15 @@ import net.fabricmc.api.ClientModInitializer;
 
 public class PizzeriaApi implements ClientModInitializer {
 
-	private static PizzaManager mainManager;
-	public static ActionTypeRegistry getRegistry(){
-		if(mainManager==null)
-			mainManager=new MainPizzaManager();
-		return PizzaManager.actionTypeRegistry;
-	}
-	@Override
-	public void onInitializeClient() {
-		getRegistry();
-	}
+  private static PizzaManager mainManager;
+
+  public static ActionTypeRegistry getRegistry() {
+    if (mainManager == null) mainManager = new MainPizzaManager();
+    return PizzaManager.actionTypeRegistry;
+  }
+
+  @Override
+  public void onInitializeClient() {
+    getRegistry();
+  }
 }

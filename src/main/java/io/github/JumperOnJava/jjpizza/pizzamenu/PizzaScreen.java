@@ -3,85 +3,101 @@ package io.github.JumperOnJava.jjpizza.pizzamenu;
 import io.github.JumperOnJava.jjpizza.pizzamenu.widgets.pizza.PizzaSlice;
 import io.github.JumperOnJava.jjpizza.pizzamenu.widgets.pizza.PizzaWidget;
 import io.github.JumperOnJava.lavajumper.common.Tr;
+import java.util.*;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-
-import java.util.*;
 import net.minecraft.text.Text;
 
 public class PizzaScreen extends Screen {
-    private final List<? extends PizzaSlice> slices;
-    private final Screen configuratorScreen;
-    private final PizzaManager manager;
-    public PizzaWidget pizzaWidget;
-    //ImmutableSlicesList slices;
-    public PizzaScreen(List<? extends PizzaSlice> slices, Screen configuratorScreen, PizzaManager manager) {
-        super(Text.empty());
-        this.manager = manager;
-        this.slices = slices;
-        this.configuratorScreen = configuratorScreen;
+  private final List<? extends PizzaSlice> slices;
+  private final Screen configuratorScreen;
+  private final PizzaManager manager;
+  public PizzaWidget pizzaWidget;
+
+  // ImmutableSlicesList slices;
+  public PizzaScreen(
+      List<? extends PizzaSlice> slices, Screen configuratorScreen, PizzaManager manager) {
+    super(Text.empty());
+    this.manager = manager;
+    this.slices = slices;
+    this.configuratorScreen = configuratorScreen;
+  }
+
+  @Override
+  public boolean shouldPause() {
+    return false;
+  }
+
+  public void init() {
+
+    if (configuratorScreen != null)
+      addDrawableChild(
+          new ButtonWidget.Builder(
+                  Tr.get("jjpizza.screen.openconfig"),
+                  b -> {
+                    MinecraftClient.getInstance().setScreen(configuratorScreen);
+                  })
+              .position(10, 10)
+              .size(60, 20)
+              .build());
+    if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+      addDrawableChild(
+          new ButtonWidget.Builder(
+                  Text.literal("Export Translaslation"), b -> Tr.generateTranlationMap())
+              .position(10, 32)
+              .width(120)
+              .build());
+      /*addDrawableChild(new ButtonWidget.Builder(Text.literal("Force load"),b->{
+      	//PizzaManager.getManager().actions.clear();
+      	manager.actions=manager.load();
+      }).position(10,54).width(70).build());*/
+
     }
 
-    @Override
-    public boolean shouldPause() {
-        return false;
+    pizzaWidget = new PizzaWidget();
+    pizzaWidget.setupSize(
+        (int) (Math.min(width, height) / 2f * .8f),
+        (int) (Math.min(width, height) / 2f * .8f / 8),
+        width / 2,
+        height / 2);
+    pizzaWidget.setupHitRadius(10000);
+    pizzaWidget.setupSlices(slices);
+    addDrawableChild(pizzaWidget);
+  }
+
+  private boolean releasedOnce = false;
+
+  @Override
+  public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+    if (manager.matchesKey(keyCode, scanCode) && !releasedOnce) {
+      clickAtMouse();
     }
+    if (!releasedOnce) releasedOnce = true;
+    return super.keyReleased(keyCode, scanCode, modifiers);
+  }
 
-    public void init(){
+  private void clickAtMouse() {
+    var x = client.mouse.getX() / client.options.getGuiScale().getValue();
+    var y = client.mouse.getY() / client.options.getGuiScale().getValue();
+    this.mouseClicked(x, y, 0);
+  }
 
-
-        if(configuratorScreen!=null)
-        addDrawableChild(new ButtonWidget.Builder(Tr.get("jjpizza.screen.openconfig"), b->{
-            MinecraftClient.getInstance().setScreen(configuratorScreen);
-        }).position(10,10).size(60,20).build());
-        if(FabricLoader.getInstance().isDevelopmentEnvironment()){
-            addDrawableChild(new ButtonWidget.Builder(Text.literal("Export Translaslation"),b-> Tr.generateTranlationMap()).position(10,32).width(120).build());
-            /*addDrawableChild(new ButtonWidget.Builder(Text.literal("Force load"),b->{
-                //PizzaManager.getManager().actions.clear();
-                manager.actions=manager.load();
-            }).position(10,54).width(70).build());*/
-
-        }
-
-        pizzaWidget = new PizzaWidget();
-        pizzaWidget.setupSize((int) (Math.min(width,height)/2f*.8f),(int) (Math.min(width,height)/2f*.8f/8),width/2,height/2);
-        pizzaWidget.setupHitRadius(10000);
-        pizzaWidget.setupSlices(slices);
-        addDrawableChild(pizzaWidget);
+  public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    if (!releasedOnce) return false;
+    if (manager.matchesKey(keyCode, scanCode)) {
+      clickAtMouse();
+      this.close();
+      return true;
     }
-    private boolean releasedOnce=false;
-    @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if(manager.matchesKey(keyCode,scanCode) && !releasedOnce) {
-            clickAtMouse();
-        }
-        if(!releasedOnce)
-            releasedOnce = true;
-        return super.keyReleased(keyCode, scanCode, modifiers);
-    }
+    return super.keyPressed(keyCode, scanCode, modifiers);
+  }
 
-    private void clickAtMouse() {
-        var x = client.mouse.getX()/client.options.getGuiScale().getValue();
-        var y = client.mouse.getY()/client.options.getGuiScale().getValue();
-        this.mouseClicked(x,y,0);
-    }
-
-    public boolean keyPressed(int keyCode,int scanCode, int modifiers){
-        if(!releasedOnce)
-            return false;
-        if(manager.matchesKey(keyCode,scanCode)){
-            clickAtMouse();
-            this.close();
-            return true;
-        }
-        return super.keyPressed(keyCode,scanCode,modifiers);
-    }
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
-    }
+  @Override
+  public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    renderBackground(context, mouseX, mouseY, delta);
+    super.render(context, mouseX, mouseY, delta);
+  }
 }

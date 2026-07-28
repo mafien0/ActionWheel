@@ -5,9 +5,11 @@ import io.github.JumperOnJava.jjpizza.pizzamenu.widgets.pizza.PizzaSlice;
 import net.minecraft.client.gui.screen.Screen;
 
 public interface ConfigurablePizzaSlice extends PizzaSlice {
-    Screen getConfiguratorScreen(Runnable updateCallback);
+  Screen getConfiguratorScreen(Runnable updateCallback);
 
-    PizzaManager getManager();
-    void setManager(PizzaManager manager);
-    ConfigurablePizzaSlice copy();
+  PizzaManager getManager();
+
+  void setManager(PizzaManager manager);
+
+  ConfigurablePizzaSlice copy();
 }

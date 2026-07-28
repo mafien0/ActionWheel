@@ -5,11 +5,11 @@ import net.minecraft.client.gui.screen.Screen;
 
 public interface ConfigActionApplier {
 
-    void setSliceConfigScreen(Screen screen);
+  void setSliceConfigScreen(Screen screen);
 
-    void rebuildSlices();
+  void rebuildSlices();
 
-    void removeSlice(ConfigurablePizzaSlice targetAction);
+  void removeSlice(ConfigurablePizzaSlice targetAction);
 
-    void splitSlice(ConfigurablePizzaSlice configurablePizzaAction);
+  void splitSlice(ConfigurablePizzaSlice configurablePizzaAction);
 }

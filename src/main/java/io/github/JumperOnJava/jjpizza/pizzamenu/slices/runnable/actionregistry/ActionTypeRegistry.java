@@ -13,15 +13,12 @@ public class ActionTypeRegistry {
 
   public ActionTypeRegistry() {
     typeFactories = new TreeSet<>();
-    addActionType(NullActionProvider::new, null);
-    addActionType(ChatMessageActionProvider::new, null);
-    if (FabricLoader.getInstance()
-        .isModLoaded(
-            "malilib")) // lmao hack cause malilib is not released for 1.20.2 but somehow fabric
-      // loader thinks it exists
+    addActionType(_ -> new NullActionProvider(), null);
+    addActionType(_ -> new ChatMessageActionProvider(), null);
+    addActionType(_ -> new KeybindingActionProvider(), null);
+    addActionType(_ -> new SubPizzaScreenActionProvider(), null);
+    if (FabricLoader.getInstance().isModLoaded("malilib"))
       addActionType(MalilibActionProvider::new, null);
-    addActionType(KeybindingActionProvider::new, null);
-    addActionType(SubPizzaScreenActionProvider::new, null);
   }
 
   private final Set<TypeInfo> typeFactories;
@@ -30,9 +27,9 @@ public class ActionTypeRegistry {
     return new ArrayList<>(typeFactories);
   }
 
-  public void addActionType(Function<Boolean, ConfigurableRunnable> factory) {
-    typeFactories.add(new TypeInfo(factory, null));
-  }
+//  public void addActionType(Function<Boolean, ConfigurableRunnable> factory) {
+//    typeFactories.add(new TypeInfo(factory, null));
+//  }
 
   public void addActionType(
       Function<Boolean, ConfigurableRunnable> factory,
@@ -40,9 +37,9 @@ public class ActionTypeRegistry {
     typeFactories.add(new TypeInfo(factory, adapter));
   }
 
-  public Set<TypeInfo> getTypeFactories() {
-    return new HashSet<>(typeFactories);
-  }
+//  public Set<TypeInfo> getTypeFactories() {
+//    return new HashSet<>(typeFactories);
+//  }
 
   public TypeInfo getNextFactory(TypeInfo factory) {
     var list = asList();
@@ -56,7 +53,7 @@ public class ActionTypeRegistry {
         return getNextFactory(s);
       }
     }
-    return asList().get(0);
+    return asList().getFirst();
   }
 
   public Gson getGson() {
@@ -72,9 +69,9 @@ public class ActionTypeRegistry {
     return builder.create();
   }
 
-  public TypeInfo getFirstFactory() {
-    return asList().get(0);
-  }
+//  public TypeInfo getFirstFactory() {
+//    return asList().get(0);
+//  }
 
   public class Adapter
       implements JsonDeserializer<ConfigurableRunnable>, JsonSerializer<ConfigurableRunnable> {
@@ -93,10 +90,8 @@ public class ActionTypeRegistry {
         } catch (NullPointerException ignored) {
         }
       }
-      return new NullActionProvider(false);
+      return new NullActionProvider();
     }
-
-    public static int t = 0;
 
     @Override
     public JsonElement serialize(

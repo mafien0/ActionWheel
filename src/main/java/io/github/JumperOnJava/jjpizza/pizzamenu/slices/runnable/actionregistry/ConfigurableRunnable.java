@@ -10,7 +10,6 @@ public interface ConfigurableRunnable extends Runnable {
    * @param configurableRunnable
    */
   default void setParent(ConfigurablePizzaSlice configurableRunnable) {}
-  ;
 
   Screen getConfiguratorScreen();
 

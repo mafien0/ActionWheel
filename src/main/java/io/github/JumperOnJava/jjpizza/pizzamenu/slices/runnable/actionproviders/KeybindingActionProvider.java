@@ -1,6 +1,5 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionproviders;
 
-import io.github.JumperOnJava.jjpizza.pizzamenu.slices.ConfigurablePizzaSlice;
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ActionTypeRegistry;
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ConfigurableRunnable;
 import io.github.JumperOnJava.lavajumper.common.Tr;
@@ -11,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 
@@ -18,9 +18,8 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
   public static Set<String> awaitingMatch = new HashSet<>();
   private String targetKeyBindingID = "";
   private boolean hold = false;
-  private transient ConfigurablePizzaSlice parent;
 
-  public KeybindingActionProvider(Boolean isReal) {}
+  public KeybindingActionProvider() {}
 
   private KeyMapping getTargetKeyBinding() {
     for (var kb : Minecraft.getInstance().options.keyMappings) {
@@ -30,21 +29,16 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
   }
 
   @Override
-  public void setParent(ConfigurablePizzaSlice pizzaSlice) {
-    this.parent = pizzaSlice;
-  }
-
-  @Override
   public Screen getConfiguratorScreen() {
     return new KeyBindingEditScreen(this);
   }
 
   @Override
   public ConfigurableRunnable copy() {
-    var kb = new KeybindingActionProvider(true);
+    var kb = new KeybindingActionProvider();
     kb.hold = hold;
     if (targetKeyBindingID == null) targetKeyBindingID = "";
-    kb.targetKeyBindingID = new String(targetKeyBindingID);
+    kb.targetKeyBindingID = targetKeyBindingID;
     return kb;
   }
 
@@ -58,7 +52,14 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
       awaitingMatch.add(targetKeyBindingID);
       targetKeyBinding.clickCount++;
       var client = Minecraft.getInstance();
-      client.keyboardHandler.keyPress(client.getWindow().getWindow(), -1, -1, 1, -1);
+
+      // Dummy key, needed to trigger `KeyMapping.matches`
+      // Which is injected with custom matcher
+      client.keyboardHandler.keyPress(
+          client.getWindow().handle(),
+          1,
+          new KeyEvent(-1, -1, -1)
+      );
     }
   }
 
@@ -94,31 +95,26 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
     targetKeyBinding.release();
   }
 
-  private static class VanillaKBWrapper implements TargetKeybind {
-    private final KeyMapping keybind;
-
-    public VanillaKBWrapper(KeyMapping binding) {
-      this.keybind = binding;
-    }
+  private record VanillaKBWrapper(KeyMapping keybind) implements TargetKeybind {
 
     public Component getButtonText() {
-      return Component.translatable(keybind.getCategory())
-          .append(" : ")
-          .append(Component.translatable(keybind.getName()));
-    }
+        return Component.translatable(String.valueOf(keybind.getCategory()))
+            .append(" : ")
+            .append(Component.translatable(keybind.getName()));
+      }
 
-    @Override
-    public String getId() {
-      return keybind.getName();
-    }
+      @Override
+      public String getId() {
+        return keybind.getName();
+      }
 
-    @Override
-    public boolean matches(String search) {
-      search = search.toLowerCase();
-      return keybind.getName().toLowerCase().contains(search)
-          || I18n.get(keybind.getName()).toLowerCase().contains(search);
+      @Override
+      public boolean matches(String search) {
+        search = search.toLowerCase();
+        return keybind.getName().toLowerCase().contains(search)
+            || I18n.get(keybind.getName()).toLowerCase().contains(search);
+      }
     }
-  }
 
   public static class KeyBindingEditScreen extends Screen {
     private final TargetKeybindStorage target;
@@ -154,7 +150,7 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
         var activateButton =
             new Button.Builder(
                     buttonText,
-                    b -> {
+                _ -> {
                       listEntry.setMeActive();
                       target.setTargetID(keybind.getId());
                     })

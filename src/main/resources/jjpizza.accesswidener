@@ -1,8 +1,4 @@
-accessWidener v1 named
-accessible field net/minecraft/client/option/KeyBinding timesPressed I
-accessible method net/minecraft/client/option/KeyBinding reset ()V
-accessible field net/minecraft/client/gui/screen/Screen drawables Ljava/util/List;
-accessible field net/minecraft/client/texture/TextureManager textures Ljava/util/Map;
-accessible method net/minecraft/client/gui/screen/Screen remove (Lnet/minecraft/client/gui/Element;)V
-accessible method net/minecraft/client/gui/widget/SliderWidget setValue (D)V
-accessible class net/minecraft/client/render/RenderLayer$MultiPhaseParameters
+accessWidener v2 official
+accessible field net/minecraft/client/KeyMapping clickCount I
+accessible method net/minecraft/client/KeyboardHandler keyPress (JILnet/minecraft/client/input/KeyEvent;)V
+accessible method net/minecraft/client/KeyMapping release ()V

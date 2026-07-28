@@ -21,7 +21,7 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
   private String id = "";
   private transient SubPizzaManager pizza;
 
-  public SubPizzaScreenActionProvider(Boolean aBoolean) {}
+  public SubPizzaScreenActionProvider() {}
 
   @Override
   public Screen getConfiguratorScreen() {
@@ -30,7 +30,7 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
 
   @Override
   public ConfigurableRunnable copy() {
-    var sp = new SubPizzaScreenActionProvider(true);
+    var sp = new SubPizzaScreenActionProvider();
     sp.id = id;
     return sp;
   }
@@ -42,8 +42,8 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
   }
 
   private void makeSurePizzaExists() {
-    if (id.equals("")) {
-      id = "Randomname-" + new Random().nextInt(0, 0xFFFF);
+    if (id.isEmpty()) {
+      id = "random_name-" + new Random().nextInt(0, 0xFFFF);
     }
 
     if (pizza == null || !id.equals(pizza.id)) {
@@ -78,7 +78,7 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
       nameBox.setResponder(
           s -> {
             updatePizzaId(s);
-            button.active = s != null && !s.isBlank();
+            button.active = !s.isBlank();
           });
       nameBox.setHint(Tr.get("jjpizza.subpizza.placeholder").withColor(CommonColors.GRAY));
       addRenderableWidget(nameBox);
@@ -105,7 +105,7 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
         entry.addDrawableChild(
             new Button.Builder(
                     Component.literal(filename),
-                    (b) -> {
+                    (_) -> {
                       target.id = filename;
                       nameBox.setValue(target.id);
                     })
@@ -115,7 +115,8 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
         entry.addDrawableChild(
             new Button.Builder(
                     Component.literal("X"),
-                    b -> {
+                _ -> {
+                      //noinspection ResultOfMethodCallIgnored
                       file.delete();
                       updateList();
                     })
@@ -126,11 +127,9 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
       }
     }
 
-    private void select(Button buttonWidget) {}
-
     private void editSelectedPizza(Button buttonWidget) {
       target.makeSurePizzaExists();
-      AskScreen.ask(target.pizza.getBuilderScreen((c) -> updateList(), this::updateList));
+      AskScreen.ask(target.pizza.getBuilderScreen((_) -> updateList(), this::updateList));
     }
 
     private void updatePizzaId(String s) {

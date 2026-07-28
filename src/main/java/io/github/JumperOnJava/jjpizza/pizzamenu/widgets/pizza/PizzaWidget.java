@@ -2,7 +2,7 @@ package io.github.JumperOnJava.jjpizza.pizzamenu.widgets.pizza;
 
 import java.util.LinkedList;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -44,12 +44,12 @@ public class PizzaWidget implements Renderable, GuiEventListener, NarratableEntr
     return this;
   }
 
-  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-    context.pose().pushPose();
+  public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    context.pose().pushMatrix();
     // ActionTextRenderer.sendChatMessag*e("x: ",mouseX," y: ",mouseY);
     var prof = Profiler.get();
     prof.push("Pizza");
-    context.pose().translate(x, y, 0);
+    context.pose().translate(x, y, context.pose());
     slices.forEach(
         slice -> {
           slice.render(context, mouseX - x, mouseY - y, delta);

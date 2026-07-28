@@ -12,11 +12,10 @@ import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SubScreen;
 import java.util.*;
 import java.util.function.Consumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePizzaSlice>>
     implements ConfigActionApplier {
@@ -50,8 +49,6 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
     deletePizza = new PizzaWidget();
   }
 
-  Runnable saveCallback;
-
   @Override
   public boolean isPauseScreen() {
     return false;
@@ -79,11 +76,6 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
               }
 
               @Override
-              public Component getName() {
-                return Component.empty();
-              }
-
-              @Override
               public void onLeftClick() {
                 target.remove();
               }
@@ -93,10 +85,6 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
                 return 0xFFFF7057;
               }
 
-              @Override
-              public ResourceLocation getIconTexture() {
-                return null;
-              }
             };
         delSlice.target = slice;
         deleteSlices.add(delSlice);
@@ -120,11 +108,11 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
     addRenderableWidget(subScreen);
     var hwidth = width / 2;
     addRenderableWidget(
-        new Button.Builder(Tr.get("jjpizza.edit.save"), b -> this.success(editSlices))
+        new Button.Builder(Tr.get("jjpizza.edit.save"), _ -> this.success(editSlices))
             .bounds(gap / 2, height - 20 - gap / 2, hwidth / 2 - gap, 20)
             .build());
     addRenderableWidget(
-        new Button.Builder(Tr.get("jjpizza.edit.cancel"), b -> this.fail())
+        new Button.Builder(Tr.get("jjpizza.edit.cancel"), _ -> this.fail())
             .bounds(gap / 2 + hwidth / 2, height - 20 - gap / 2, hwidth / 2 - gap, 20)
             .build());
     rebuildSlices();
@@ -134,9 +122,9 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
     this.subScreen.setScreen(screen);
   }
 
-  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-    renderBackground(context, mouseX, mouseY, delta);
-    super.render(context, mouseX, mouseY, delta);
+  public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    extractBackground(context, mouseX, mouseY, delta);
+    super.extractRenderState(context, mouseX, mouseY, delta);
   }
 
   public void setSliceConfigScreen(Screen screen) {
@@ -161,14 +149,14 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
 
   @Override
   public void initClose() {
-    if (this.minecraft.screen == this) this.minecraft.setScreen(null);
+    if (this.minecraft.gui.screen() == this) this.minecraft.gui.setScreen(null);
     else super.initClose();
   }
 
   @Override
   public void removeSlice(ConfigurablePizzaSlice targetAction) {
-    editSlices.remove(editSlices.indexOf(targetAction));
-    if (editSlices.size() == 0) {
+    editSlices.remove(targetAction);
+    if (editSlices.isEmpty()) {
       editSlices.add(
           new RunnableSlice(
               "Empty action", CircleSlice.percent(0.125f, 0.375f), targetAction.getManager()));

@@ -11,16 +11,16 @@ import java.util.Random;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
 public class RunnableSlice implements ConfigurablePizzaSlice {
   @Expose CircleSlice circleSlice;
   @Expose String name;
   @Expose int color;
-  @Expose ConfigurableRunnable onLeftClick = new NullActionProvider(false);
-  @Expose ConfigurableRunnable onRightClick = new NullActionProvider(false);
-  @Expose ResourceLocation icon = ResourceLocation.parse("textures/item/diamond.png");
+  @Expose ConfigurableRunnable onLeftClick = new NullActionProvider();
+  @Expose ConfigurableRunnable onRightClick = new NullActionProvider();
+  @Expose Identifier icon = Identifier.parse("textures/item/diamond.png");
 
   @Override
   public PizzaManager getManager() {
@@ -55,13 +55,13 @@ public class RunnableSlice implements ConfigurablePizzaSlice {
 
   @Override
   public void onLeftClick() {
-    Minecraft.getInstance().setScreen(null);
+    Minecraft.getInstance().gui.setScreen(null);
     onLeftClick.run();
   }
 
   @Override
   public void onRightClick() {
-    Minecraft.getInstance().setScreen(null);
+    Minecraft.getInstance().gui.setScreen(null);
     onRightClick.run();
   }
 
@@ -69,7 +69,7 @@ public class RunnableSlice implements ConfigurablePizzaSlice {
     return Component.literal(name);
   }
 
-  public ResourceLocation getIconTexture() {
+  public Identifier getIconTexture() {
     return icon;
   }
 

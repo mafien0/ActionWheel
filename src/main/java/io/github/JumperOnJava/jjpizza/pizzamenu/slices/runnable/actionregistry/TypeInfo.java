@@ -16,9 +16,9 @@ public class TypeInfo implements Function<Boolean, ConfigurableRunnable>, Compar
     this.factory = configurableRunnableSupplier;
     this.adapter = adapter;
 
-    var testobj = factory.apply(false);
-    this.type = testobj.getClass();
-    this.hashCode = testobj.getClass().getName().hashCode();
+    var testObj = factory.apply(false);
+    this.type = testObj.getClass();
+    this.hashCode = testObj.getClass().getName().hashCode();
   }
 
   @Override

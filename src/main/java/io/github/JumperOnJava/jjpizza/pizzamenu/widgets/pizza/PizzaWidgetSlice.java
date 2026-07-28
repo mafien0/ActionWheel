@@ -7,7 +7,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.JumperOnJava.jjpizza.datatypes.Angle;
 import io.github.JumperOnJava.jjpizza.datatypes.CircleSlice;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -30,12 +30,11 @@ public class PizzaWidgetSlice implements Renderable, GuiEventListener, Narratabl
     hoverManager = new HoverManager(4);
   }
 
-  @Override
-  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+  public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 
     hoverManager.tickHover(isMouseOver(mouseX, mouseY), delta);
 
-    context.pose().pushPose();
+    context.pose().pushMatrix();
 
     // RenderSystem.enableBlend();
     // RenderSystem.defaultBlendFunc();

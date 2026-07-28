@@ -11,6 +11,8 @@ import java.util.*;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+// TODO: Malilib integration.
+// Dont really want to look into it rn
 public class MalilibActionProvider implements ConfigurableRunnable, TargetKeybindStorage {
   public static Set<String> awaitingMatch = new HashSet<>();
   private String targetKeyBindingID = "";

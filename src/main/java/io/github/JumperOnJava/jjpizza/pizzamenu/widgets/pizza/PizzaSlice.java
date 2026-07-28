@@ -2,7 +2,7 @@ package io.github.JumperOnJava.jjpizza.pizzamenu.widgets.pizza;
 
 import io.github.JumperOnJava.jjpizza.datatypes.CircleSlice;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
 public interface PizzaSlice {
@@ -21,7 +21,7 @@ public interface PizzaSlice {
    *
    * @return
    */
-  default ResourceLocation getIconTexture() {
+  default Identifier getIconTexture() {
     return null;
   }
 

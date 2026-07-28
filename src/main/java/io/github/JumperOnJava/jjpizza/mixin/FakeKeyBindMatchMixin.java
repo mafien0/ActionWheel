@@ -2,6 +2,7 @@ package io.github.JumperOnJava.jjpizza.mixin;
 
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionproviders.KeybindingActionProvider;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.input.KeyEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -13,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class FakeKeyBindMatchMixin {
   @Shadow @Final private String name;
 
-  @Inject(method = "matches", at = @At("HEAD"), cancellable = true)
-  private void matchIfQueued(int keyCode, int scanCode, CallbackInfoReturnable<Boolean> cir) {
+  @Inject(method = "matches*", at = @At("HEAD"), cancellable = true)
+  private void matchIfQueued(final KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
     var id = this.name;
     if (KeybindingActionProvider.awaitingMatch.contains(this.name)) {
       cir.setReturnValue(true);

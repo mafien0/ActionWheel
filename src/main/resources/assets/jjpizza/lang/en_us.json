@@ -24,5 +24,7 @@
   "jjpizza.subpizza.edit": "Edit",
   "jjpizza.actions.SubPizzaScreenActionProvider": "Another Pizza",
   "jjpizza.edit.save": "Save",
-  "jjpizza.edit.cancel": "Cancel"
+  "jjpizza.edit.cancel": "Cancel",
+
+  "name": "name"
 }

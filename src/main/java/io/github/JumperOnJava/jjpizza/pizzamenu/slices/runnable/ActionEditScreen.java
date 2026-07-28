@@ -2,6 +2,7 @@ package io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable;
 
 import static io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ActionTypeRegistry.gap;
 
+import io.github.JumperOnJava.jjpizza.pizzamenu.PizzaManager;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SubScreen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -28,8 +29,7 @@ class ActionEditScreen extends Screen {
                 Component.empty(),
                 button -> {
                   pizzaAction.onLeftClick =
-                      pizzaAction
-                          .manager
+                      PizzaManager
                           .actionTypeRegistry
                           .getNextFactoryForType(pizzaAction.onLeftClick)
                           .apply(true);
@@ -46,7 +46,6 @@ class ActionEditScreen extends Screen {
 
     addRenderableWidget(leftCycleButton);
 
-    ////////////////////////////////////
 
     var rightAction =
         new SubScreen(
@@ -62,8 +61,7 @@ class ActionEditScreen extends Screen {
                 Component.empty(),
                 button -> {
                   pizzaAction.onRightClick =
-                      pizzaAction
-                          .manager
+                      PizzaManager
                           .actionTypeRegistry
                           .getNextFactoryForType(pizzaAction.onRightClick)
                           .apply(true);

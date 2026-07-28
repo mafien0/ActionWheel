@@ -6,7 +6,7 @@ import io.github.JumperOnJava.jjpizza.pizzamenu.widgets.pizza.PizzaSlice;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class EditorPizzaSlice implements PizzaSlice {
   private final ConfigurablePizzaSlice targetAction;
@@ -25,7 +25,7 @@ public class EditorPizzaSlice implements PizzaSlice {
 
   @Override
   public void onLeftClick() {
-    clickCallback.accept(targetAction.getConfiguratorScreen(updateCallback::run));
+    clickCallback.accept(targetAction.getConfiguratorScreen(updateCallback));
   }
 
   @Override
@@ -46,7 +46,7 @@ public class EditorPizzaSlice implements PizzaSlice {
   }
 
   @Override
-  public ResourceLocation getIconTexture() {
+  public Identifier getIconTexture() {
     return targetAction.getIconTexture();
   }
 

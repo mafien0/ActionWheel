@@ -11,14 +11,14 @@ import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SliderWidget;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SubScreen;
 import java.util.function.Consumer;
-import net.minecraft.ResourceLocationException;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.IdentifierException;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
 public class RunnableScreen extends Screen {
@@ -32,7 +32,6 @@ public class RunnableScreen extends Screen {
   }
 
   public void init() {
-    var client = this.minecraft;
     initDrawConfig();
     initColorConfig();
     initConfigSubScreens();
@@ -97,7 +96,7 @@ public class RunnableScreen extends Screen {
 
     var nameField =
         new EditBox(
-            minecraft.font, gap, gap, width / 4 - gap, 16, Component.translatable("Name"));
+            minecraft.font, gap, gap, width / 4 - gap, 16, Component.translatable("name"));
     nameField.setValue(pizzaAction.name);
     nameField.setResponder(
         s -> {
@@ -112,14 +111,14 @@ public class RunnableScreen extends Screen {
             gap,
             width / 4 * 2 - gap * 2,
             16,
-            Component.translatable("Name"));
+            Component.translatable("name"));
     iconField.setMaxLength(Integer.MAX_VALUE);
     iconField.setValue(pizzaAction.icon.toString());
     iconField.setResponder(
         s -> {
           try {
-            pizzaAction.icon = ResourceLocation.parse(s);
-          } catch (ResourceLocationException e) {
+            pizzaAction.icon = Identifier.parse(s);
+          } catch (IdentifierException e) {
             iconField.setTextColor(0xffff7057);
           } finally {
             iconField.setTextColor(0xffe0e0e0);
@@ -130,13 +129,11 @@ public class RunnableScreen extends Screen {
     var iconSelectField =
         new Button.Builder(
                 Tr.get("jjpizza.runnable.iconselect"),
-                b -> {
-                  AskScreen.ask(
-                      new TextureListAsk.Builder()
-                          .onSuccess(i -> iconField.setValue(i.toString()))
-                          .onFail(() -> {})
-                          .build());
-                })
+            _ -> AskScreen.ask(
+                new TextureListAsk.Builder()
+                    .onSuccess(i -> iconField.setValue(i.toString()))
+                    .onFail(() -> {})
+                    .build()))
             .pos(width / 4 * 3, gap / 2)
             .size(width / 4, 20)
             .build();
@@ -180,10 +177,9 @@ public class RunnableScreen extends Screen {
     addRenderableWidget(endAngleField);
   }
 
-  @Override
-  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-    renderBackground(context, mouseX, mouseY, delta);
-    super.render(context, mouseX, mouseY, delta);
+  public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    extractBackground(context, mouseX, mouseY, delta);
+    super.extractRenderState(context, mouseX, mouseY, delta);
   }
 
   private void update() {

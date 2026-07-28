@@ -3,11 +3,14 @@ package io.github.JumperOnJava.lavajumper.gui;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SubScreen;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.NonNull;
 
 public abstract class AskScreen<T> extends Screen {
   private final Consumer<T> onSuccess;
@@ -57,21 +60,25 @@ public abstract class AskScreen<T> extends Screen {
 
   public static <T> void ask(AskScreen<T> askScreen) {
     var client = Minecraft.getInstance();
-    var currentScreen = client.screen;
+    var currentScreen = client.gui.screen();
     if (currentScreen == null) {
-      client.setScreen(askScreen);
+      client.gui.setScreen(askScreen);
       return;
     }
     var askSubScreen =
         new OverlayScreen(0, 0, currentScreen.width, currentScreen.height).setScreen(askScreen);
     currentScreen.children();
-    currentScreen.renderables.add(0, askSubScreen);
-    ((java.util.List<GuiEventListener>) currentScreen.children()).add(0, askSubScreen);
+    currentScreen.addRenderableWidget(askSubScreen);
   }
 
   private static <T extends AskScreen<?>> void closeScreen(T screen) {
     var client = Minecraft.getInstance();
-    var children = client.screen.children();
+    if (client.gui.screen() == null) {
+      return;
+    }
+    List<? extends GuiEventListener> children;
+
+    children = client.gui.screen().children();
     var del = new ArrayList<GuiEventListener>();
     for (var c : children) {
       if (c instanceof OverlayScreen overlayScreen) {
@@ -88,7 +95,7 @@ public abstract class AskScreen<T> extends Screen {
       }
     }
     for (var d : del) {
-      client.screen.removeWidget(d);
+      client.gui.screen().removeWidget(d);
     }
   }
 
@@ -104,8 +111,8 @@ public abstract class AskScreen<T> extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-      super.mouseClicked(mouseX, mouseY, button);
+    public boolean mouseClicked(final @NonNull MouseButtonEvent event, final boolean doubleClick) {
+      super.mouseClicked(event, doubleClick);
       return true;
     }
 
@@ -118,14 +125,13 @@ public abstract class AskScreen<T> extends Screen {
 
     @Override
     public boolean mouseDragged(
-        double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-      super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        final @NonNull MouseButtonEvent event, final double dx, final double dy) {
       return true;
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-      super.mouseReleased(mouseX, mouseY, button);
+    public boolean mouseReleased(@NonNull MouseButtonEvent event) {
+      super.mouseReleased(event);
       return true;
     }
   }

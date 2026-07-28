@@ -3,57 +3,51 @@ package io.github.JumperOnJava.lavajumper.common;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.function.Consumer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 
 public class Binder {
-  /**
-   * Adds bind
-   *
-   * @param displayName
-   * @param category
-   * @param defaultKey
-   * @param callback
-   */
+  private static final KeyMapping.Category LAVAJUMPER_CATEGORY =
+      KeyMapping.Category.register(
+          Identifier.fromNamespaceAndPath("lavajumper", "lavajumper"));
+
   public static KeyMapping addBind(
-      String displayName, String category, int defaultKey, Consumer<Minecraft> callback) {
-    var bind =
+      String displayName,
+      KeyMapping.Category category,
+      int defaultKey,
+      Consumer<Minecraft> callback) {
+
+    KeyMapping bind =
         new KeyMapping(
-            displayName, InputConstants.Type.KEYSYM, defaultKey, category); // GLFW.GLFW_KEY_DOWN
-    KeyBindingHelper.registerKeyBinding(bind);
-    ClientTickEvents.END_CLIENT_TICK.register(
-        client -> {
-          while (bind.consumeClick()) {
-            callback.accept(client);
-          }
-        });
+            displayName,
+            InputConstants.Type.KEYSYM,
+            defaultKey,
+            category);
+
+    KeyMappingHelper.registerKeyMapping(bind);
+
+    ClientTickEvents.END_CLIENT_TICK.register(client -> {
+      while (bind.consumeClick()) {
+        callback.accept(client);
+      }
+    });
+
     return bind;
   }
 
-  /**
-   * Adds bind under "LavaJumper" category
-   *
-   * @param displayName
-   * @param defaultKey
-   * @param callback
-   * @return
-   * @api
-   */
   public static KeyMapping addBind(
-      String displayName, int defaultKey, Consumer<Minecraft> callback) {
-    return addBind(displayName, "LavaJumper", defaultKey, callback);
+      String displayName,
+      int defaultKey,
+      Consumer<Minecraft> callback) {
+    return addBind(displayName, LAVAJUMPER_CATEGORY, defaultKey, callback);
   }
 
-  /**
-   * Adds bind without default key
-   *
-   * @param displayName
-   * @param category
-   * @param callback
-   */
   public static KeyMapping addBind(
-      String displayName, String category, Consumer<Minecraft> callback) {
+      String displayName,
+      KeyMapping.Category category,
+      Consumer<Minecraft> callback) {
     return addBind(displayName, category, -1, callback);
   }
 }

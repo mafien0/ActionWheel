@@ -2,6 +2,7 @@ package io.github.JumperOnJava.lavajumper.gui.widgets;
 
 import java.util.function.Consumer;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.NonNull;
 
 /** Slider widget for general use. */
 public class SliderWidget extends net.minecraft.client.gui.components.AbstractSliderButton {
@@ -21,7 +22,7 @@ public class SliderWidget extends net.minecraft.client.gui.components.AbstractSl
    * @param value
    * @param round rounding of value. For example when round==5 then value range from 0 to 256 values
    *     would only be numbers that are divisible by five (0,5,15,230,255). This rule is not applied
-   *     to value contructor parameter
+   *     to value constructor parameter
    */
   public SliderWidget(
       int x,
@@ -60,7 +61,7 @@ public class SliderWidget extends net.minecraft.client.gui.components.AbstractSl
   }
 
   @Override
-  public Component getMessage() {
+  public @NonNull Component getMessage() {
     var val = round(scaleValueFrom01(value));
     var isInt = round == (int) round;
     var s = isInt ? String.valueOf((int) val) : String.valueOf(val);

@@ -2,6 +2,7 @@ package io.github.JumperOnJava.jjpizza.pizzamenu;
 
 import java.io.File;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.input.KeyEvent;
 
 public class SubPizzaManager extends PizzaManager {
   public final String id;
@@ -20,7 +21,7 @@ public class SubPizzaManager extends PizzaManager {
   }
 
   @Override
-  public boolean matchesKey(int keyCode, int scanCode) {
+  public boolean matchesKey(KeyEvent event) {
     return false;
   }
 }

@@ -137,12 +137,12 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
     editSlices.add(
         new RunnableSlice(
             "Empty action",
-            new CircleSlice(circleSlice.startAngle, circleSlice.getMidAngle()),
+            new CircleSlice(circleSlice.startAngle(), circleSlice.getMidAngle()),
             clickedSlice.getManager()));
     editSlices.add(
         new RunnableSlice(
             "Empty action",
-            new CircleSlice(circleSlice.getMidAngle(), circleSlice.endAngle),
+            new CircleSlice(circleSlice.getMidAngle(), circleSlice.endAngle()),
             clickedSlice.getManager()));
     rebuildSlices();
   }

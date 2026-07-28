@@ -1,18 +1,10 @@
 package io.github.JumperOnJava.jjpizza.datatypes;
 
-public class CircleSlice {
-  public final Angle startAngle;
-  public final Angle endAngle;
-
+public record CircleSlice(Angle startAngle, Angle endAngle) {
   public Angle getMidAngle() {
     return Angle.newRadian(
-             (this.startAngle.getRadian() + this.endAngle.getRadian()) / 2
-             + (float) (endAngle.getRadian() < startAngle.getRadian() ? Math.PI : 0));
-  }
-
-  public CircleSlice(Angle startAngle, Angle endAngle) {
-    this.startAngle = startAngle;
-    this.endAngle = endAngle;
+        (this.startAngle.getRadian() + this.endAngle.getRadian()) / 2
+            + (float) (endAngle.getRadian() < startAngle.getRadian() ? Math.PI : 0));
   }
 
   public static CircleSlice radians(float startAngle, float endAngle) {
@@ -37,8 +29,6 @@ public class CircleSlice {
     var r2 = anglee < maxAngle;
     var r3 = startAngle.getRadian() > endAngle.getRadian();
     var o1 = r1 && r2;
-    var o2 = o1 ^ r3;
-    // return false;
-    return o2;
+    return o1 ^ r3;
   }
 }

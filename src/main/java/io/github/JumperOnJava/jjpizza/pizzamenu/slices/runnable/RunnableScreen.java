@@ -147,13 +147,13 @@ public class RunnableScreen extends Screen {
             20,
             Tr.get("jjpizza.runnable.startangle"),
             360,
-            Math.round(pizzaAction.getSlice().startAngle.getDegree()),
+            Math.round(pizzaAction.getSlice().startAngle().getDegree()),
             5);
     startAngleField.setChangedListener(
         d -> {
           pizzaAction.setSlice(
               new CircleSlice(
-                  Angle.newDegree((float) (double) d), pizzaAction.getSlice().endAngle));
+                  Angle.newDegree((float) (double) d), pizzaAction.getSlice().endAngle()));
           update();
         });
     addRenderableWidget(startAngleField);
@@ -165,13 +165,13 @@ public class RunnableScreen extends Screen {
             20,
             Tr.get("jjpizza.runnable.endangle"),
             360,
-            Math.round(pizzaAction.getSlice().endAngle.getDegree()),
+            Math.round(pizzaAction.getSlice().endAngle().getDegree()),
             5);
     endAngleField.setChangedListener(
         d -> {
           pizzaAction.setSlice(
               new CircleSlice(
-                  pizzaAction.circleSlice.startAngle, Angle.newDegree((float) (double) d)));
+                  pizzaAction.circleSlice.startAngle(), Angle.newDegree((float) (double) d)));
           update();
         });
     addRenderableWidget(endAngleField);

@@ -9,6 +9,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.phys.Vec2;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Pizza menu widget Should be set up by using setupSize and setupSlices methods to work properly.
@@ -44,29 +45,21 @@ public class PizzaWidget implements Renderable, GuiEventListener, NarratableEntr
     return this;
   }
 
-  public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+  public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
     context.pose().pushMatrix();
     // ActionTextRenderer.sendChatMessag*e("x: ",mouseX," y: ",mouseY);
     var prof = Profiler.get();
     prof.push("Pizza");
     context.pose().translate(x, y, context.pose());
     slices.forEach(
-        slice -> {
-          slice.render(context, mouseX - x, mouseY - y, delta);
-        });
+        slice -> slice.extractRenderState(context, mouseX - x, mouseY - y, delta));
     slices.forEach(
-        slice -> {
-          slice.renderText(context);
-        });
+        slice -> slice.renderText(context));
     slices.forEach(
-        slice -> {
-          slice.renderIcons(context);
-        });
+        slice -> slice.renderIcons(context));
     prof.pop();
-    context.pose().popPose();
+    context.pose().popMatrix();
   }
-
-  @Override
   public boolean mouseClicked(double mouseX, double mouseY, int button) {
     boolean cond = false;
     for (var slice : new LinkedList<>(slices)) {
@@ -86,7 +79,7 @@ public class PizzaWidget implements Renderable, GuiEventListener, NarratableEntr
   }
 
   @Override
-  public NarrationPriority narrationPriority() {
+  public @NonNull NarrationPriority narrationPriority() {
     return NarrationPriority.HOVERED;
   }
 
@@ -111,7 +104,7 @@ public class PizzaWidget implements Renderable, GuiEventListener, NarratableEntr
   }
 
   @Override
-  public void updateNarration(NarrationElementOutput builder) {}
+  public void updateNarration(@NonNull NarrationElementOutput builder) {}
 
   public void setupHitRadius(int hitRadius) {
     this.hitRadius = hitRadius;

@@ -6,10 +6,14 @@ import io.github.JumperOnJava.lavajumper.common.Tr;
 import java.util.*;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.NonNull;
 
 public class PizzaScreen extends Screen {
   private final List<? extends PizzaSlice> slices;
@@ -37,16 +41,14 @@ public class PizzaScreen extends Screen {
       addRenderableWidget(
           new Button.Builder(
                   Tr.get("jjpizza.screen.openconfig"),
-                  b -> {
-                    Minecraft.getInstance().setScreen(configuratorScreen);
-                  })
+                  b -> Minecraft.getInstance().gui.setScreen(configuratorScreen))
               .pos(10, 10)
               .size(60, 20)
               .build());
     if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
       addRenderableWidget(
           new Button.Builder(
-                  Component.literal("Export Translaslation"), b -> Tr.generateTranlationMap())
+                  Component.literal("Export Translation"), b -> Tr.generateTranslationMap())
               .pos(10, 32)
               .width(120)
               .build());
@@ -70,34 +72,40 @@ public class PizzaScreen extends Screen {
 
   private boolean releasedOnce = false;
 
-  @Override
   public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-    if (manager.matchesKey(keyCode, scanCode) && !releasedOnce) {
+    if (manager.matchesKey(new KeyEvent(keyCode, scanCode, modifiers)) && !releasedOnce) {
       clickAtMouse();
     }
     if (!releasedOnce) releasedOnce = true;
-    return super.keyReleased(keyCode, scanCode, modifiers);
+    return super.keyReleased(new KeyEvent(keyCode, scanCode, modifiers));
   }
 
   private void clickAtMouse() {
-    var x = minecraft.mouseHandler.xpos() / minecraft.options.guiScale().get();
-    var y = minecraft.mouseHandler.ypos() / minecraft.options.guiScale().get();
-    this.mouseClicked(x, y, 0);
+    double x = minecraft.mouseHandler.xpos() / minecraft.options.guiScale().get();
+    double y = minecraft.mouseHandler.ypos() / minecraft.options.guiScale().get();
+
+    this.mouseClicked(
+        new MouseButtonEvent(
+            x,
+            y,
+            new MouseButtonInfo(0, 0) // left mouse button, no modifiers
+        ), false
+    );
   }
 
   public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
     if (!releasedOnce) return false;
-    if (manager.matchesKey(keyCode, scanCode)) {
+    if (manager.matchesKey(new KeyEvent(keyCode, scanCode, modifiers))) {
       clickAtMouse();
       this.onClose();
       return true;
     }
-    return super.keyPressed(keyCode, scanCode, modifiers);
+    return super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
   }
 
   @Override
-  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-    renderBackground(context, mouseX, mouseY, delta);
-    super.render(context, mouseX, mouseY, delta);
+  public void extractRenderState(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    extractBackground(context, mouseX, mouseY, delta);
+    super.extractRenderState(context, mouseX, mouseY, delta);
   }
 }

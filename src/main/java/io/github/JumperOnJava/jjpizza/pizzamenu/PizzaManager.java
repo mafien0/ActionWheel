@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.KeyEvent;
 
 public abstract class PizzaManager {
   List<RunnableSlice> actions = new ArrayList<>();
@@ -22,7 +23,7 @@ public abstract class PizzaManager {
   }
 
   public void openPizza(Minecraft client) {
-    client.setScreen(new PizzaScreen(actions, getBuilderScreen(), this));
+    client.gui.setScreen(new PizzaScreen(actions, getBuilderScreen(), this));
   }
 
   public AskScreen<List<ConfigurablePizzaSlice>> getBuilderScreen() {
@@ -55,7 +56,7 @@ public abstract class PizzaManager {
   }
 
   public List<RunnableSlice> load() {
-    if (readConfig().equals("")) {
+    if (readConfig().isEmpty()) {
       actions.add(new RunnableSlice("Empty action", CircleSlice.percent(0, .25f), this));
       actions.add(new RunnableSlice("Empty action", CircleSlice.percent(.25f, .5f), this));
       actions.add(new RunnableSlice("Empty action", CircleSlice.percent(.5f, .75f), this));
@@ -86,5 +87,5 @@ public abstract class PizzaManager {
     save();
   }
 
-  public abstract boolean matchesKey(int keyCode, int scanCode);
+  public abstract boolean matchesKey(KeyEvent event);
 }

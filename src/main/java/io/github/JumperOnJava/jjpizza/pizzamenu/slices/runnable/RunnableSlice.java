@@ -34,7 +34,7 @@ public class RunnableSlice implements ConfigurablePizzaSlice {
   @Override
   public ConfigurablePizzaSlice copy() {
     var newSlice = new RunnableSlice(this.name, this.circleSlice, manager);
-    newSlice.circleSlice = new CircleSlice(circleSlice.startAngle, circleSlice.endAngle);
+    newSlice.circleSlice = new CircleSlice(circleSlice.startAngle(), circleSlice.endAngle());
     newSlice.icon = this.icon;
     newSlice.onLeftClick = this.onLeftClick.copy();
     newSlice.onRightClick = this.onRightClick.copy();
@@ -79,11 +79,11 @@ public class RunnableSlice implements ConfigurablePizzaSlice {
   }
 
   public void setSlice(CircleSlice inCircleSlice) {
-    if (Math.abs(inCircleSlice.startAngle.getDegree() - inCircleSlice.endAngle.getDegree()) < 5)
+    if (Math.abs(inCircleSlice.startAngle().getDegree() - inCircleSlice.endAngle().getDegree()) < 5)
       this.circleSlice =
           new CircleSlice(
-              inCircleSlice.startAngle.add(Angle.newDegree(-5)),
-              inCircleSlice.endAngle.add(Angle.newDegree(5)));
+              inCircleSlice.startAngle().add(Angle.newDegree(-5)),
+              inCircleSlice.endAngle().add(Angle.newDegree(5)));
     else this.circleSlice = inCircleSlice;
   }
 

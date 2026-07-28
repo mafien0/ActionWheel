@@ -15,12 +15,12 @@ public class EditorPizzaSlice implements PizzaSlice {
   private final Consumer<ConfigurablePizzaSlice> rightClickCallback;
   private final Consumer<ConfigurablePizzaSlice> removeCallback;
 
-  public EditorPizzaSlice(ConfigurablePizzaSlice targetAction, ConfigActionApplier athing) {
+  public EditorPizzaSlice(ConfigurablePizzaSlice targetAction, ConfigActionApplier thing) {
     this.targetAction = targetAction;
-    this.clickCallback = athing::setSliceConfigScreen;
-    this.rightClickCallback = athing::splitSlice;
-    this.updateCallback = athing::rebuildSlices;
-    this.removeCallback = athing::removeSlice;
+    this.clickCallback = thing::setSliceConfigScreen;
+    this.rightClickCallback = thing::splitSlice;
+    this.updateCallback = thing::rebuildSlices;
+    this.removeCallback = thing::removeSlice;
   }
 
   @Override

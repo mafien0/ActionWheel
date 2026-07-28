@@ -1,19 +1,20 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu.widgets;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.NonNull;
 
 public class TextureWidget implements Renderable, NarratableEntry, GuiEventListener {
-  public ResourceLocation getTexture() {
+  public Identifier getTexture() {
     return texture;
   }
 
-  public void setTexture(ResourceLocation texture) {
+  public void setTexture(Identifier texture) {
     this.texture = texture;
   }
 
@@ -49,13 +50,13 @@ public class TextureWidget implements Renderable, NarratableEntry, GuiEventListe
     this.height = height;
   }
 
-  private ResourceLocation texture;
+  private Identifier texture;
   private int x;
   private int y;
   private int width;
   private int height;
 
-  public TextureWidget(ResourceLocation texture, int x, int y, int width, int height) {
+  public TextureWidget(Identifier texture, int x, int y, int width, int height) {
     this.texture = texture;
     this.x = x;
     this.y = y;
@@ -64,9 +65,24 @@ public class TextureWidget implements Renderable, NarratableEntry, GuiEventListe
   }
 
   @Override
-  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+  public void extractRenderState(
+      GuiGraphicsExtractor context,
+      int mouseX,
+      int mouseY,
+      float delta
+  ) {
     context.blit(
-        RenderType::guiTexturedOverlay, texture, x, y, 0, 0, width, height, width, height);
+        RenderPipelines.GUI_TEXTURED,
+        texture,
+        x,
+        y,
+        0,
+        0,
+        width,
+        height,
+        width,
+        height
+    );
   }
 
   @Override
@@ -78,10 +94,10 @@ public class TextureWidget implements Renderable, NarratableEntry, GuiEventListe
   }
 
   @Override
-  public NarrationPriority narrationPriority() {
+  public @NonNull NarrationPriority narrationPriority() {
     return NarrationPriority.NONE;
   }
 
   @Override
-  public void updateNarration(NarrationElementOutput builder) {}
+  public void updateNarration(@NonNull NarrationElementOutput builder) {}
 }

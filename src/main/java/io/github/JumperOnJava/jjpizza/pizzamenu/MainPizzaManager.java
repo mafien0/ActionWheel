@@ -1,9 +1,11 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu;
 
 import io.github.JumperOnJava.lavajumper.common.Binder;
+
 import java.io.File;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.input.KeyEvent;
 
 public class MainPizzaManager extends PizzaManager {
   public final KeyMapping pizzaKeybind;
@@ -14,8 +16,8 @@ public class MainPizzaManager extends PizzaManager {
   }
 
   @Override
-  public boolean matchesKey(int keyCode, int scanCode) {
-    return pizzaKeybind.matches(keyCode, scanCode);
+  public boolean matchesKey(KeyEvent event) {
+    return pizzaKeybind.matches(event);
   }
 
   protected File getConfigFile() {

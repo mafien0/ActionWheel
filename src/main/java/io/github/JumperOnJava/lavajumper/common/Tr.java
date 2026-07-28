@@ -4,7 +4,7 @@ import com.google.gson.GsonBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.resources.language.I18n;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -12,7 +12,7 @@ public class Tr {
   static Map<String, String> translationMap = new HashMap<>();
 
   /** Generates file for translation in game and puts it into .autoTranslateOutput folder */
-  public static void generateTranlationMap() {
+  public static void generateTranslationMap() {
     var file =
         FabricLoader.getInstance()
             .getGameDir()
@@ -28,11 +28,13 @@ public class Tr {
   }
 
   private static void addKeyToTranslation(String key) {
-    if (!I18n.exists(key)) translationMap.put(key, "");
+    if (Language.getInstance().getOrDefault(key).equals(key)) {
+      translationMap.put(key, "");
+    }
   }
 
   /**
-   * Gets translatable text component for key and adds it to list if it is doesn't have translation.
+   * Gets translatable text component for key and adds it to list if it is not have translation.
    * After getting all translations you should call generateTranslationMap() static method to save
    * it to .autoTranslateOutput folder
    *

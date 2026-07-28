@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.NonNull;
 
 /** Scroll list widget for general use. */
 public class ScrollListWidget
@@ -36,14 +38,13 @@ public class ScrollListWidget
     return super.addEntry(entry);
   }
 
-  @Override
   protected int getScrollbarPosition() {
     return width - 6;
   }
 
   @Override
-  public boolean mouseClicked(double mouseX, double mouseY, int button) {
-    return super.mouseClicked(mouseX, mouseY, button);
+  public boolean mouseClicked(final @NonNull MouseButtonEvent event, final boolean doubleClick) {
+    return super.mouseClicked(event, doubleClick);
   }
 
   private ScrollListEntry selectedEntry = new ScrollListEntry();
@@ -64,65 +65,59 @@ public class ScrollListWidget
 
   /**
    * Scroll list entry. Out of box does nothing but using addDrawableChild method you can add
-   * widgets for custom behaviour.
+   * widgets for custom behavior.
    */
   public static class ScrollListEntry extends ObjectSelectionList.Entry<ScrollListEntry> {
     private final List<Renderable> drawables = Lists.newArrayList();
     private final List<GuiEventListener> children = Lists.newArrayList();
-    private boolean isSelected = false;
     private Consumer<ScrollListEntry> activationConsumer;
     private BiFunction<Integer, Integer, Boolean> isHoveredFunction;
-    private List<GuiEventListener> deactivate = Lists.newArrayList();
+    private final List<GuiEventListener> deactivate = Lists.newArrayList();
 
     @Override
-    public Component getNarration() {
+    public @NonNull Component getNarration() {
       return Component.empty();
     }
 
     int currentX, currentY;
 
     private void setSelected(boolean selected) {
-      this.isSelected = selected;
       for (var d : deactivate) {
         if (d instanceof AbstractButton pw) {
-          pw.active = !isSelected;
+          pw.active = !selected;
         }
       }
     }
 
     @Override
-    public void render(
-        GuiGraphics context,
-        int index,
-        int y,
-        int x,
-        int entryWidth,
-        int entryHeight,
+    public void extractContent(
+        @NonNull GuiGraphicsExtractor context,
         int mouseX,
         int mouseY,
         boolean hovered,
-        float delta) {
+        float delta
+    ) {
       for (var d : drawables) {
-        context.pose().pushPose();
-        context.pose().translate(x, y, 0);
+        context.pose().pushMatrix();
+        context.pose().translate((float) getX(), (float) getY());
         if (!isHoveredFunction.apply(mouseX, mouseY)) {
           mouseX += 100000;
           mouseY += 100000;
         }
         ScrollListWidget.renderingEntries = true;
-        d.render(context, mouseX - x, mouseY - y, delta);
+        d.extractRenderState(context, mouseX - getX(), mouseY - getY(), delta);
         ScrollListWidget.renderingEntries = false;
-        currentX = x;
-        currentY = y;
-        context.pose().popPose();
+        currentX = getX();
+        currentY = getY();
+        context.pose().popMatrix();
       }
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-      if (!isMouseOver(mouseX, mouseY)) return false;
+    public boolean mouseClicked(final @NonNull MouseButtonEvent event, final boolean doubleClick) {
+      if (!isMouseOver(event.x(), event.y())) return false;
       for (var c : children) {
-        c.mouseClicked(mouseX - currentX, mouseY - currentY, button);
+        c.mouseClicked(event, doubleClick);
       }
       return false;
     }

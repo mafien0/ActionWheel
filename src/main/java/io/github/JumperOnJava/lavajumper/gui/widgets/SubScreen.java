@@ -1,6 +1,5 @@
 package io.github.JumperOnJava.lavajumper.gui.widgets;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -16,8 +15,12 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Widget for rendering screens in screens. Use init method so set widget dimensions and setScreen
@@ -27,7 +30,11 @@ import org.jetbrains.annotations.Nullable;
 public class SubScreen implements Renderable, ContainerEventHandler, NarratableEntry, LayoutElement {
   public static boolean blurDisabled = false;
   private Screen screen;
-  private int x, y, width, height;
+  private int x;
+  private int y;
+  private boolean dragging;
+  private final int width;
+  private final int height;
 
   public SubScreen(int x, int y, int width, int height) {
     this.x = x;
@@ -37,7 +44,7 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
   }
 
   /**
-   * If screen paremeter equals null widget will display empty screen with random color and
+   * If screen parameter equals null widget will display empty screen with random color and
    * "nullSubScreen" text in center
    *
    * @param screen
@@ -45,22 +52,22 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
   public SubScreen setScreen(Screen screen) {
     if (screen == null) screen = new NullSubScreen();
     this.screen = screen;
-    screen.init(Minecraft.getInstance(), width, height);
+    screen.init(width, height);
     return this;
   }
 
   @Override
-  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-    context.pose().pushPose();
-    context.pose().translate(x, y, 0);
+  public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    context.pose().pushMatrix();
+    context.pose().translate((float) x, (float) y);
     blurDisabled = true;
-    screen.render(context, mouseX - x, mouseY - y, delta);
+    screen.extractRenderState(context, mouseX - x, mouseY - y, delta);
     blurDisabled = false;
-    context.pose().popPose();
+    context.pose().popMatrix();
   }
 
   @Override
-  public void updateNarration(NarrationElementOutput builder) {}
+  public void updateNarration(@NonNull NarrationElementOutput builder) {}
 
   @Override
   public void mouseMoved(double mouseX, double mouseY) {
@@ -68,39 +75,39 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
   }
 
   @Override
-  public List<? extends GuiEventListener> children() {
+  public @NonNull List<? extends GuiEventListener> children() {
     return screen.children();
   }
 
   @Override
-  public Optional<GuiEventListener> getChildAt(double mouseX, double mouseY) {
+  public @NonNull Optional<GuiEventListener> getChildAt(double mouseX, double mouseY) {
     return screen.getChildAt(mouseX, mouseY);
   }
 
   @Override
-  public boolean mouseClicked(double mouseX, double mouseY, int button) {
-    return screen.mouseClicked(mouseX - x, mouseY - y, button);
+  public boolean mouseClicked(final @NonNull MouseButtonEvent event, final boolean doubleClick) {
+    return screen.mouseClicked(event, doubleClick);
   }
 
   @Override
-  public boolean mouseReleased(double mouseX, double mouseY, int button) {
-    return screen.mouseReleased(mouseX - x, mouseY - y, button);
+  public boolean mouseReleased(@NonNull MouseButtonEvent event) {
+    return screen.mouseReleased(event);
   }
 
   @Override
   public boolean mouseDragged(
-      double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-    return screen.mouseDragged(mouseX - x, mouseY - y, button, deltaX, deltaY);
+      final @NonNull MouseButtonEvent event, final double dx, final double dy) {
+    return screen.mouseDragged(event, dx, dy);
   }
 
   @Override
   public boolean isDragging() {
-    return false;
+    return this.dragging;
   }
 
   @Override
   public void setDragging(boolean dragging) {
-    setDragging(dragging);
+    this.dragging = dragging;
   }
 
   @Override
@@ -110,18 +117,18 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
   }
 
   @Override
-  public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-    return screen.keyPressed(keyCode, scanCode, modifiers);
+  public boolean keyPressed(@NonNull KeyEvent event) {
+    return screen.keyPressed(event);
   }
 
   @Override
-  public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-    return screen.keyReleased(keyCode, scanCode, modifiers);
+  public boolean keyReleased(@NonNull KeyEvent event) {
+    return screen.keyReleased(event);
   }
 
   @Override
-  public boolean charTyped(char chr, int modifiers) {
-    return screen.charTyped(chr, modifiers);
+  public boolean charTyped(final @NonNull CharacterEvent event) {
+    return screen.charTyped(event);
   }
 
   @Nullable
@@ -152,7 +159,7 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
   }
 
   @Override
-  public ScreenRectangle getRectangle() {
+  public @NonNull ScreenRectangle getRectangle() {
     return ContainerEventHandler.super.getRectangle();
   }
 
@@ -163,7 +170,7 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
 
   @Nullable
   @Override
-  public ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
+  public ComponentPath nextFocusPath(@NonNull FocusNavigationEvent navigation) {
     return ContainerEventHandler.super.nextFocusPath(navigation);
   }
 
@@ -176,7 +183,7 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
   }
 
   @Override
-  public NarrationPriority narrationPriority() {
+  public @NonNull NarrationPriority narrationPriority() {
     return NarrationPriority.NONE;
   }
 
@@ -216,7 +223,7 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
   }
 
   @Override
-  public void visitWidgets(Consumer<AbstractWidget> consumer) {}
+  public void visitWidgets(@NonNull Consumer<AbstractWidget> consumer) {}
 
   @Override
   public int getTabOrderGroup() {
@@ -229,9 +236,8 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-      super.render(context, mouseX, mouseY, delta);
-      RenderSystem.enableBlend();
+    public void extractRenderState(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+      super.extractRenderState(context, mouseX, mouseY, delta);
       context.fill(
           0,
           0,
@@ -239,7 +245,7 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
           height,
           (int) (Math.pow(x + width + y + height, 5f) % Integer.MAX_VALUE) & 0x00FFFFFF
               | 0x3F000000);
-      context.drawCenteredString(
+      context.centeredText(
           Minecraft.getInstance().font,
           "nullSubScreen",
           width / 2,

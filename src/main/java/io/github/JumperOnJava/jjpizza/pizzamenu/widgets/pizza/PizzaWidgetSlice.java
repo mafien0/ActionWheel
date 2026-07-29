@@ -1,6 +1,9 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu.widgets.pizza;
 
 import static java.lang.Math.*;
+
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.JumperOnJava.jjpizza.datatypes.Angle;
 import io.github.JumperOnJava.jjpizza.datatypes.CircleSlice;
 import net.minecraft.client.Minecraft;
@@ -9,11 +12,22 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.Vec2;
+import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
+import org.joml.Matrix3x2fc;
+import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PizzaWidgetSlice implements Renderable, GuiEventListener, NarratableEntry {
+  private static final Logger LOGGER = LoggerFactory.getLogger(PizzaWidgetSlice.class);
   public final PizzaSlice pizzaSlice;
   private final CircleSlice circleSlice;
   private final PizzaWidget parent;
@@ -26,75 +40,104 @@ public class PizzaWidgetSlice implements Renderable, GuiEventListener, Narratabl
     hoverManager = new HoverManager(4);
   }
 
-  public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-
+  public void extractRenderState(
+      GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
     hoverManager.tickHover(isMouseOver(mouseX, mouseY), delta);
-
     context.pose().pushMatrix();
-
-    // RenderSystem.enableBlend();
-    // RenderSystem.defaultBlendFunc();
-    // RenderSystem.disableCull();
-    // RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-    // RenderSystem.setShaderColor(1f,1f,1f,1f);
-
     translateForward(context.pose());
-    context.drawSpecial(
-        vertexConsumerProvider -> {
-          var bufferBuilder = vertexConsumerProvider.getBuffer(RenderType.debugFilledBox());
-          float res = (float) (PI / 60);
 
-          if (circleSlice.endAngle().getRadian() != circleSlice.startAngle().getRadian()) {
-            for (var a = circleSlice.startAngle().getRadian();
-                 a
-                    < circleSlice.endAngle().getRadian()
-                        + (circleSlice.startAngle().getRadian() > circleSlice.endAngle().getRadian()
-                            ? (2 * PI)
-                            : 0);
-                 a += res) {
-              bufferBuilder
-                  .addVertex(
-                      peekMatrix,
-                      (float) (-cos(a) * parent.radius),
-                      (float) (-sin(a) * parent.radius),
-                      0f)
-                  .setColor(pizzaSlice.getBackgroundColor());
-              bufferBuilder
-                  .addVertex(
-                      peekMatrix,
-                      (float) (-cos(a) * parent.innerRadius),
-                      (float) (-sin(a) * parent.innerRadius),
-                      0f)
-                  .setColor(pizzaSlice.getBackgroundColor());
-              // var b = a+res;
-              // bufferBuilder.vertex(peekMatrix, (float) (-cos(b) * parent.radius), (float)
-              // (-sin(b) * parent.radius), 0f).color(pizzaSlice.getBackgroundColor());
-              // bufferBuilder.vertex(peekMatrix, (float) (-cos(b) * parent.radius), (float)
-              // (-sin(b) * parent.radius), 0f).color(pizzaSlice.getBackgroundColor());
-              // bufferBuilder.vertex(peekMatrix, (float) (-cos(b) * parent.innerRadius), (float)
-              // (-sin(b) * parent.innerRadius), 0f).color(pizzaSlice.getBackgroundColor());
-            }
-            bufferBuilder
-                .addVertex(
-                    peekMatrix,
-                    (float) (-cos(circleSlice.endAngle().getRadian()) * parent.radius),
-                    (float) (-sin(circleSlice.endAngle().getRadian()) * parent.radius),
-                    0f)
-                .setColor(pizzaSlice.getBackgroundColor());
-            bufferBuilder
-                .addVertex(
-                    peekMatrix,
-                    (float) (-cos(circleSlice.endAngle().getRadian()) * parent.innerRadius),
-                    (float) (-sin(circleSlice.endAngle().getRadian()) * parent.innerRadius),
-                    0f)
-                .setColor(pizzaSlice.getBackgroundColor());
-          }
-        });
-
-    // RenderSystem.enableCull();
-    // RenderSystem.disableBlend();
+    int argb = pizzaSlice.getBackgroundColor();
+    var arc =
+        new SliceRenderState(
+            ARGB.red(argb),
+            ARGB.green(argb),
+            ARGB.blue(argb),
+            ARGB.alpha(argb),
+            circleSlice,
+            parent.radius,
+            parent.innerRadius,
+            new Matrix3x2f(context.pose()),
+            new ScreenRectangle(0, 0, context.guiWidth(), context.guiHeight()),
+            new ScreenRectangle(0, 0, context.guiWidth(), context.guiHeight()));
+    context.guiRenderState.addGuiElement(arc);
 
     context.pose().popMatrix();
+  }
+
+  private record SliceRenderState(
+      int red,
+      int green,
+      int blue,
+      int alpha,
+      CircleSlice slice,
+      float radius,
+      float innerRadius,
+      Matrix3x2fc pose,
+      ScreenRectangle scissorArea,
+      ScreenRectangle bounds)
+      implements GuiElementRenderState {
+    @Override
+    public void buildVertices(@NonNull VertexConsumer consumer) {
+      float angleStep = (float) (PI / 120);
+      float startAngle = slice.startAngle().getRadian();
+      float endAngle = slice.endAngle().getRadian();
+
+      if (endAngle == startAngle) return;
+
+      float wrappedEndAngle = endAngle + (startAngle > endAngle ? (float) (2 * PI) : 0);
+
+      float prevOuterX = (float) (-Math.cos(startAngle) * radius);
+      float prevOuterY = (float) (-Math.sin(startAngle) * radius);
+      float prevInnerX = (float) (-Math.cos(startAngle) * innerRadius);
+      float prevInnerY = (float) (-Math.sin(startAngle) * innerRadius);
+
+      for (float angle = startAngle + angleStep; angle <= wrappedEndAngle; angle += angleStep) {
+        float cosAngle = (float) Math.cos(angle);
+        float sinAngle = (float) Math.sin(angle);
+        float currOuterX = -cosAngle * radius;
+        float currOuterY = -sinAngle * radius;
+        float currInnerX = -cosAngle * innerRadius;
+        float currInnerY = -sinAngle * innerRadius;
+
+        consumer
+            .addVertexWith2DPose(pose, prevOuterX, prevOuterY)
+            .setColor(red, green, blue, alpha);
+        consumer
+            .addVertexWith2DPose(pose, prevInnerX, prevInnerY)
+            .setColor(red, green, blue, alpha);
+        consumer
+            .addVertexWith2DPose(pose, currInnerX, currInnerY)
+            .setColor(red, green, blue, alpha);
+        consumer
+            .addVertexWith2DPose(pose, currOuterX, currOuterY)
+            .setColor(red, green, blue, alpha);
+
+        prevOuterX = currOuterX;
+        prevOuterY = currOuterY;
+        prevInnerX = currInnerX;
+        prevInnerY = currInnerY;
+      }
+    }
+
+    @Override
+    public @NonNull RenderPipeline pipeline() {
+      return RenderPipelines.GUI;
+    }
+
+    @Override
+    public @NonNull TextureSetup textureSetup() {
+      return TextureSetup.noTexture();
+    }
+
+    @Override
+    public ScreenRectangle scissorArea() {
+      return scissorArea;
+    }
+
+    @Override
+    public ScreenRectangle bounds() {
+      return bounds;
+    }
   }
 
   public void renderIcons(GuiGraphicsExtractor context) {
@@ -135,8 +178,7 @@ public class PizzaWidgetSlice implements Renderable, GuiEventListener, Narratabl
 
     matrices.translate(
         (float) (-cos(circleSlice.getMidAngle().getRadian()) * forward),
-        (float) (-sin(circleSlice.getMidAngle().getRadian()) * forward)
-    );
+        (float) (-sin(circleSlice.getMidAngle().getRadian()) * forward));
   }
 
   private Vec2 getRenderPos() {
@@ -144,10 +186,16 @@ public class PizzaWidgetSlice implements Renderable, GuiEventListener, Narratabl
     return new Vec2((float) -cos(mid), (float) -sin(mid)).scale(parent.radius * 0.75f);
   }
 
-  public boolean mouseClicked(double mouseX, double mouseY, int button) {
-    var cond = isMouseOver(mouseX, mouseY);
+  public boolean mouseClicked(MouseButtonEvent event, boolean bool) {
+    boolean cond = isMouseOver(event.x(), event.y());
+    LOGGER.debug(
+        "PizzaWidgetSlice.mouseClicked: ({},{}), btn={}, hit={}",
+        event.x(),
+        event.y(),
+        event.button(),
+        cond);
     if (cond) {
-      switch (button) {
+      switch (event.button()) {
         case 0 -> pizzaSlice.onLeftClick();
         case 1 -> pizzaSlice.onRightClick();
       }
@@ -159,6 +207,7 @@ public class PizzaWidgetSlice implements Renderable, GuiEventListener, Narratabl
   public boolean mouseScrolled(
       double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
     var cond = isMouseOver(mouseX, mouseY);
+    LOGGER.debug("PizzaWidgetSlice.mouseScrolled: ({},{}), hit={}", mouseX, mouseY, cond);
     if (cond) {
       pizzaSlice.onScroll(horizontalAmount, verticalAmount);
     }
@@ -170,8 +219,16 @@ public class PizzaWidgetSlice implements Renderable, GuiEventListener, Narratabl
     float mouseAngle = (float) Math.atan2(-(mouseY / 2), -(mouseX / 2));
     if (mouseAngle < 0) mouseAngle += (float) (PI * 2);
 
-    return circleSlice.inInSlice(Angle.newRadian(mouseAngle))
-        && parent.isMouseOverRel(mouseX, mouseY);
+    boolean inSlice = circleSlice.inInSlice(Angle.newRadian(mouseAngle));
+    boolean inRadius = parent.isMouseOverRel(mouseX, mouseY);
+    LOGGER.debug(
+        "PizzaWidgetSlice.isMouseOver: ({},{}), angle={}, inSlice={}, inRadius={}",
+        mouseX,
+        mouseY,
+        mouseAngle,
+        inSlice,
+        inRadius);
+    return inSlice && inRadius;
   }
 
   @Override
@@ -183,7 +240,7 @@ public class PizzaWidgetSlice implements Renderable, GuiEventListener, Narratabl
   }
 
   @Override
-  public NarrationPriority narrationPriority() {
+  public @NonNull NarrationPriority narrationPriority() {
     return NarrationPriority.HOVERED;
   }
 
@@ -193,7 +250,7 @@ public class PizzaWidgetSlice implements Renderable, GuiEventListener, Narratabl
   }
 
   @Override
-  public void updateNarration(NarrationElementOutput builder) {
+  public void updateNarration(@NonNull NarrationElementOutput builder) {
     // builder.put(NarrationPart.TITLE, "slice narration is not implemented");
   }
 

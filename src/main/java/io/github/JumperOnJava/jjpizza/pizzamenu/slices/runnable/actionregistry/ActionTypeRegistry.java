@@ -27,9 +27,9 @@ public class ActionTypeRegistry {
     return new ArrayList<>(typeFactories);
   }
 
-//  public void addActionType(Function<Boolean, ConfigurableRunnable> factory) {
-//    typeFactories.add(new TypeInfo(factory, null));
-//  }
+  //  public void addActionType(Function<Boolean, ConfigurableRunnable> factory) {
+  //    typeFactories.add(new TypeInfo(factory, null));
+  //  }
 
   public void addActionType(
       Function<Boolean, ConfigurableRunnable> factory,
@@ -37,9 +37,9 @@ public class ActionTypeRegistry {
     typeFactories.add(new TypeInfo(factory, adapter));
   }
 
-//  public Set<TypeInfo> getTypeFactories() {
-//    return new HashSet<>(typeFactories);
-//  }
+  //  public Set<TypeInfo> getTypeFactories() {
+  //    return new HashSet<>(typeFactories);
+  //  }
 
   public TypeInfo getNextFactory(TypeInfo factory) {
     var list = asList();
@@ -69,9 +69,9 @@ public class ActionTypeRegistry {
     return builder.create();
   }
 
-//  public TypeInfo getFirstFactory() {
-//    return asList().get(0);
-//  }
+  //  public TypeInfo getFirstFactory() {
+  //    return asList().get(0);
+  //  }
 
   public class Adapter
       implements JsonDeserializer<ConfigurableRunnable>, JsonSerializer<ConfigurableRunnable> {

@@ -55,11 +55,7 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
 
       // Dummy key, needed to trigger `KeyMapping.matches`
       // Which is injected with custom matcher
-      client.keyboardHandler.keyPress(
-          client.getWindow().handle(),
-          1,
-          new KeyEvent(-1, -1, -1)
-      );
+      client.keyboardHandler.keyPress(client.getWindow().handle(), 1, new KeyEvent(-1, -1, -1));
     }
   }
 
@@ -98,23 +94,26 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
   private record VanillaKBWrapper(KeyMapping keybind) implements TargetKeybind {
 
     public Component getButtonText() {
-        return Component.translatable(String.valueOf(keybind.getCategory()))
-            .append(" : ")
-            .append(Component.translatable(keybind.getName()));
-      }
-
-      @Override
-      public String getId() {
-        return keybind.getName();
-      }
-
-      @Override
-      public boolean matches(String search) {
-        search = search.toLowerCase();
-        return keybind.getName().toLowerCase().contains(search)
-            || I18n.get(keybind.getName()).toLowerCase().contains(search);
-      }
+      return keybind
+          .getCategory()
+          .label()
+          .copy()
+          .append(" : ")
+          .append(Component.translatable(keybind.getName()));
     }
+
+    @Override
+    public String getId() {
+      return keybind.getName();
+    }
+
+    @Override
+    public boolean matches(String search) {
+      search = search.toLowerCase();
+      return keybind.getName().toLowerCase().contains(search)
+          || I18n.get(keybind.getName()).toLowerCase().contains(search);
+    }
+  }
 
   public static class KeyBindingEditScreen extends Screen {
     private final TargetKeybindStorage target;
@@ -140,7 +139,7 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
     }
 
     private void rebuildList(ScrollListWidget listWidget, String s) {
-      listWidget.children().clear();
+      listWidget.clearList();
       listWidget.setScrollAmount(0);
       for (TargetKeybind keybind : target.getKeyBindings()) {
         if (!keybind.matches(s)) continue;
@@ -150,7 +149,7 @@ public class KeybindingActionProvider implements ConfigurableRunnable, TargetKey
         var activateButton =
             new Button.Builder(
                     buttonText,
-                _ -> {
+                    _ -> {
                       listEntry.setMeActive();
                       target.setTargetID(keybind.getId());
                     })

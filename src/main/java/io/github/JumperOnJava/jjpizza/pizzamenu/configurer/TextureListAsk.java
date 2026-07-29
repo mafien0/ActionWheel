@@ -14,6 +14,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.NonNull;
 
 public class TextureListAsk extends AskScreen<Identifier> {
   ScrollListWidget list;
@@ -71,13 +72,12 @@ public class TextureListAsk extends AskScreen<Identifier> {
             .build();
     addRenderableWidget(accept);
     addRenderableWidget(cancel);
-    selectedTextureWidget =
-        new TextureWidget(Identifier.parse(""), gap / 2, height - 40 - gap / 2, 40, 40);
+    selectedTextureWidget = new TextureWidget(null, gap / 2, height - 40 - gap / 2, 40, 40);
     addRenderableWidget(selectedTextureWidget);
   }
 
   private void filterList(String s) {
-    list.children().clear();
+    list.clearList();
     list.setScrollAmount(0);
     for (var key : textures) {
       var id = key.toString();
@@ -99,8 +99,8 @@ public class TextureListAsk extends AskScreen<Identifier> {
     }
   }
 
-  public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-    extractBackground(context, mouseX, mouseY, delta);
+  public void extractRenderState(
+      @NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
     super.extractRenderState(context, mouseX, mouseY, delta);
     context.text(
         font,

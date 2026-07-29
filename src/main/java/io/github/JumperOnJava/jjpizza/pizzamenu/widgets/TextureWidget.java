@@ -66,23 +66,9 @@ public class TextureWidget implements Renderable, NarratableEntry, GuiEventListe
 
   @Override
   public void extractRenderState(
-      GuiGraphicsExtractor context,
-      int mouseX,
-      int mouseY,
-      float delta
-  ) {
-    context.blit(
-        RenderPipelines.GUI_TEXTURED,
-        texture,
-        x,
-        y,
-        0,
-        0,
-        width,
-        height,
-        width,
-        height
-    );
+      @NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    if (texture == null || texture.getPath().isEmpty()) return;
+    context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0, 0, width, height, width, height);
   }
 
   @Override

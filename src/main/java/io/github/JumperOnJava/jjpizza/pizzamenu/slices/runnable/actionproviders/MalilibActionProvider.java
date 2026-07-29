@@ -11,8 +11,6 @@ import java.util.*;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-// TODO: Malilib integration.
-// Dont really want to look into it rn
 public class MalilibActionProvider implements ConfigurableRunnable, TargetKeybindStorage {
   public static Set<String> awaitingMatch = new HashSet<>();
   private String targetKeyBindingID = "";
@@ -41,7 +39,7 @@ public class MalilibActionProvider implements ConfigurableRunnable, TargetKeybin
   public ConfigurableRunnable copy() {
     var ml = new MalilibActionProvider(false);
     ml.keyActionType = this.keyActionType;
-    ml.targetKeyBindingID = new String(targetKeyBindingID);
+    ml.targetKeyBindingID = targetKeyBindingID;
     return ml;
   }
 
@@ -50,12 +48,10 @@ public class MalilibActionProvider implements ConfigurableRunnable, TargetKeybin
     try {
       var targetKeyBinding = getTargetKeyBinding();
       if (targetKeyBinding == null) return;
-      ((KeybindMulti) targetKeyBinding.getKeybind())
-          .getCallback()
+      Objects.requireNonNull(((KeybindMulti) targetKeyBinding.getKeybind()).getCallback())
           .onKeyAction(keyActionType, targetKeyBinding.getKeybind());
     } catch (Exception ignored) {
     }
-    ;
   }
 
   public List<TargetKeybind> getKeyBindings() {
@@ -115,7 +111,7 @@ public class MalilibActionProvider implements ConfigurableRunnable, TargetKeybin
     public Component getButtonText() {
       String categoryText = "";
       if (!singleCategoryInMod(category)) {
-        categoryText = " %s".formatted(category.getCategory());
+        category.getCategory();
       }
       return Component.literal(String.format("%s: %s", category.getModName(), hotkey.getName()));
     }

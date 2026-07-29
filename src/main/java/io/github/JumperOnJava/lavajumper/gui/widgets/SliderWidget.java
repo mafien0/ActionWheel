@@ -44,7 +44,14 @@ public class SliderWidget extends net.minecraft.client.gui.components.AbstractSl
   }
 
   public SliderWidget(
-      int x, int y, int width, int height, Component text, double maxValue, double value, int round) {
+      int x,
+      int y,
+      int width,
+      int height,
+      Component text,
+      double maxValue,
+      double value,
+      int round) {
     this(x, y, width, height, text, 0, maxValue, value, round);
   }
 

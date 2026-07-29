@@ -44,10 +44,7 @@ public class GuiHelper {
 
     @Override
     public void extractRenderState(
-        @NonNull GuiGraphicsExtractor context,
-        int mouseX,
-        int mouseY,
-        float delta) {
+        @NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
       super.extractRenderState(context, mouseX, mouseY, delta);
       context.fill(0, 0, width, height, color);
     }

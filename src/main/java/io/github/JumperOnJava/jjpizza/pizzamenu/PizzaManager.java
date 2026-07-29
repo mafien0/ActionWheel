@@ -13,16 +13,21 @@ import java.util.*;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.KeyEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class PizzaManager {
+  private static final Logger LOGGER = LoggerFactory.getLogger(PizzaManager.class);
   List<RunnableSlice> actions = new ArrayList<>();
   public static ActionTypeRegistry actionTypeRegistry = new ActionTypeRegistry();
 
   public void init() {
+    LOGGER.info("PizzaManager.init");
     actions = load();
   }
 
   public void openPizza(Minecraft client) {
+    LOGGER.debug("Opening pizza wheel with {} slices", actions.size());
     client.gui.setScreen(new PizzaScreen(actions, getBuilderScreen(), this));
   }
 
@@ -42,21 +47,18 @@ public abstract class PizzaManager {
   }
 
   public void save() {
-    /*var l = new LinkedList<RunnablePizzaSlice>();
-    actions.forEach(a->{
-    	if(a instanceof RunnablePizzaSlice r)
-    		l.add(r);
-    });
-    var tt = new TypeToken<LinkedList<RunnablePizzaSlice>>(){}.getType();*/
+    LOGGER.debug("PizzaManager.save: {} slices", actions.size());
     try {
       FileReadWrite.write(getConfigFile(), actionTypeRegistry.getGson().toJson(actions));
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.error("Failed to save pizza config", e);
     }
   }
 
   public List<RunnableSlice> load() {
+    LOGGER.info("PizzaManager.load");
     if (readConfig().isEmpty()) {
+      LOGGER.info("Config empty, creating defaults");
       actions.add(new RunnableSlice("Empty action", CircleSlice.percent(0, .25f), this));
       actions.add(new RunnableSlice("Empty action", CircleSlice.percent(.25f, .5f), this));
       actions.add(new RunnableSlice("Empty action", CircleSlice.percent(.5f, .75f), this));
@@ -67,6 +69,7 @@ public abstract class PizzaManager {
         actionTypeRegistry
             .getGson()
             .fromJson(readConfig(), new TypeToken<ArrayList<RunnableSlice>>() {}.getType());
+    LOGGER.info("Loaded {} slices", l.size());
     l.forEach(s -> s.setManager(this));
     return l;
   }

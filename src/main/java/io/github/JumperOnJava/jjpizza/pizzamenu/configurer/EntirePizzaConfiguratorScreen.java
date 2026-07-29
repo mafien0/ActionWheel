@@ -12,13 +12,15 @@ import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SubScreen;
 import java.util.*;
 import java.util.function.Consumer;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePizzaSlice>>
     implements ConfigActionApplier {
+  private static final Logger LOGGER = LoggerFactory.getLogger(EntirePizzaConfiguratorScreen.class);
   private final List<EditorPizzaSlice> widgetSlices;
   private final List<PizzaSlice> deleteSlices;
   private final PizzaWidget pizza;
@@ -84,7 +86,6 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
               public int getBackgroundColor() {
                 return 0xFFFF7057;
               }
-
             };
         delSlice.target = slice;
         deleteSlices.add(delSlice);
@@ -95,6 +96,7 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
   }
 
   public void init() {
+    LOGGER.debug("EntirePizzaConfiguratorScreen.init: {} slices", editSlices.size());
     var radius = (Math.min(width / 4, height / 2) * .8);
     pizza.setupSize((int) radius, (int) (radius / 4), width / 4, height / 2);
     pizza.setupSlices(widgetSlices);
@@ -122,16 +124,17 @@ public class EntirePizzaConfiguratorScreen extends AskScreen<List<ConfigurablePi
     this.subScreen.setScreen(screen);
   }
 
-  public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-    extractBackground(context, mouseX, mouseY, delta);
-    super.extractRenderState(context, mouseX, mouseY, delta);
-  }
+  // public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+  //   extractBackground(context, mouseX, mouseY, delta);
+  //   super.extractRenderState(context, mouseX, mouseY, delta);
+  // }
 
   public void setSliceConfigScreen(Screen screen) {
     this.setSliceConfiguratorScreen(screen);
   }
 
   public void splitSlice(ConfigurablePizzaSlice clickedSlice) {
+    LOGGER.debug("splitSlice called");
     CircleSlice circleSlice = clickedSlice.getSlice();
     editSlices.remove(clickedSlice);
     editSlices.add(

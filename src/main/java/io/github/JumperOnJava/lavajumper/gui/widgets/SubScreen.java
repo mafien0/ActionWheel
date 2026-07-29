@@ -21,14 +21,17 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Widget for rendering screens in screens. Use init method so set widget dimensions and setScreen
  * method to set/change screen in widget. When screen is not set up or equals null widget will
  * display empty screen with random color and "nullSubScreen" text in center
  */
-public class SubScreen implements Renderable, ContainerEventHandler, NarratableEntry, LayoutElement {
-  public static boolean blurDisabled = false;
+public class SubScreen
+    implements Renderable, ContainerEventHandler, NarratableEntry, LayoutElement {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SubScreen.class);
   private Screen screen;
   private int x;
   private int y;
@@ -57,12 +60,12 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
   }
 
   @Override
-  public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+  public void extractRenderState(
+      GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
     context.pose().pushMatrix();
     context.pose().translate((float) x, (float) y);
-    blurDisabled = true;
+    context.nextStratum();
     screen.extractRenderState(context, mouseX - x, mouseY - y, delta);
-    blurDisabled = false;
     context.pose().popMatrix();
   }
 
@@ -86,18 +89,26 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
 
   @Override
   public boolean mouseClicked(final @NonNull MouseButtonEvent event, final boolean doubleClick) {
-    return screen.mouseClicked(event, doubleClick);
+    LOGGER.debug(
+        "SubScreen.mouseClicked: x={}, y={}, btn={}", event.x(), event.y(), event.button());
+    MouseButtonEvent translated =
+        new MouseButtonEvent(event.x() - x, event.y() - y, event.buttonInfo());
+    return screen.mouseClicked(translated, doubleClick);
   }
 
   @Override
   public boolean mouseReleased(@NonNull MouseButtonEvent event) {
-    return screen.mouseReleased(event);
+    MouseButtonEvent translated =
+        new MouseButtonEvent(event.x() - x, event.y() - y, event.buttonInfo());
+    return screen.mouseReleased(translated);
   }
 
   @Override
   public boolean mouseDragged(
       final @NonNull MouseButtonEvent event, final double dx, final double dy) {
-    return screen.mouseDragged(event, dx, dy);
+    MouseButtonEvent translated =
+        new MouseButtonEvent(event.x() - x, event.y() - y, event.buttonInfo());
+    return screen.mouseDragged(translated, dx, dy);
   }
 
   @Override
@@ -236,7 +247,8 @@ public class SubScreen implements Renderable, ContainerEventHandler, NarratableE
     }
 
     @Override
-    public void extractRenderState(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(
+        @NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
       super.extractRenderState(context, mouseX, mouseY, delta);
       context.fill(
           0,

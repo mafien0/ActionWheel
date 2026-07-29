@@ -2,7 +2,6 @@ package io.github.JumperOnJava.lavajumper.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import io.github.JumperOnJava.lavajumper.gui.AskScreen;
-
 import java.util.Iterator;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
@@ -17,12 +16,12 @@ public class ScreenMixins {
   // SnIgnoreRenderAfterOverlay
   @Inject(
       method = "extractRenderState",
-      at = @At(
-          value = "INVOKE",
-          target = "Lnet/minecraft/client/gui/components/Renderable;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V",
-          shift = At.Shift.AFTER
-      )
-  )
+      at =
+          @At(
+              value = "INVOKE",
+              target =
+                  "Lnet/minecraft/client/gui/components/Renderable;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V",
+              shift = At.Shift.AFTER))
   private void cancelRenderAfterOverlay(
       GuiGraphicsExtractor graphics,
       int mouseX,
@@ -30,11 +29,11 @@ public class ScreenMixins {
       float a,
       CallbackInfo ci,
       @Local Iterator<Renderable> iterator,
-      @Local(name = "renderable") Renderable renderable
-  ) {
+      @Local(name = "renderable") Renderable renderable) {
     if (renderable instanceof AskScreen.OverlayScreen) {
       while (iterator.hasNext()) {
         iterator.next();
       }
     }
-  }}
+  }
+}

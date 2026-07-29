@@ -11,12 +11,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(GuiGraphicsExtractor.class)
 public abstract class ScissorMixin {
 
-  @Inject(
-      method = "containsPointInScissor",
-      at = @At("HEAD"),
-      cancellable = true)
-  private void ignoreScissorContains(
-      int x, int y, CallbackInfoReturnable<Boolean> cir) {
+  @Inject(method = "containsPointInScissor", at = @At("HEAD"), cancellable = true)
+  private void ignoreScissorContains(int x, int y, CallbackInfoReturnable<Boolean> cir) {
     if (ScrollListWidget.renderingEntries) {
       cir.setReturnValue(true);
     }

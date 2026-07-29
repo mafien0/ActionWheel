@@ -29,8 +29,7 @@ class ActionEditScreen extends Screen {
                 Component.empty(),
                 button -> {
                   pizzaAction.onLeftClick =
-                      PizzaManager
-                          .actionTypeRegistry
+                      PizzaManager.actionTypeRegistry
                           .getNextFactoryForType(pizzaAction.onLeftClick)
                           .apply(true);
                   RunnableScreen.setButtonType(button, pizzaAction.onLeftClick);
@@ -46,7 +45,6 @@ class ActionEditScreen extends Screen {
 
     addRenderableWidget(leftCycleButton);
 
-
     var rightAction =
         new SubScreen(
             this.width / 2 + gap / 2,
@@ -61,8 +59,7 @@ class ActionEditScreen extends Screen {
                 Component.empty(),
                 button -> {
                   pizzaAction.onRightClick =
-                      PizzaManager
-                          .actionTypeRegistry
+                      PizzaManager.actionTypeRegistry
                           .getNextFactoryForType(pizzaAction.onRightClick)
                           .apply(true);
                   RunnableScreen.setButtonType(button, pizzaAction.onRightClick);

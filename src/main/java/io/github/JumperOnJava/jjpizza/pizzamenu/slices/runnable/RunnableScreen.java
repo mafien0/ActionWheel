@@ -7,11 +7,11 @@ import io.github.JumperOnJava.jjpizza.datatypes.CircleSlice;
 import io.github.JumperOnJava.jjpizza.pizzamenu.configurer.TextureListAsk;
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ConfigurableRunnable;
 import io.github.JumperOnJava.lavajumper.common.Tr;
-import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SliderWidget;
 import io.github.JumperOnJava.lavajumper.gui.widgets.SubScreen;
 import java.util.function.Consumer;
 import net.minecraft.IdentifierException;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -20,8 +20,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
+import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RunnableScreen extends Screen {
+  private static final Logger LOGGER = LoggerFactory.getLogger(RunnableScreen.class);
   RunnableSlice pizzaAction;
   Runnable updateCallback;
 
@@ -32,6 +36,7 @@ public class RunnableScreen extends Screen {
   }
 
   public void init() {
+    LOGGER.debug("RunnableScreen.init: name={}", pizzaAction.name);
     initDrawConfig();
     initColorConfig();
     initConfigSubScreens();
@@ -95,8 +100,7 @@ public class RunnableScreen extends Screen {
   private void initDrawConfig() {
 
     var nameField =
-        new EditBox(
-            minecraft.font, gap, gap, width / 4 - gap, 16, Component.translatable("name"));
+        new EditBox(minecraft.font, gap, gap, width / 4 - gap, 16, Component.translatable("name"));
     nameField.setValue(pizzaAction.name);
     nameField.setResponder(
         s -> {
@@ -129,11 +133,19 @@ public class RunnableScreen extends Screen {
     var iconSelectField =
         new Button.Builder(
                 Tr.get("jjpizza.runnable.iconselect"),
-            _ -> AskScreen.ask(
-                new TextureListAsk.Builder()
-                    .onSuccess(i -> iconField.setValue(i.toString()))
-                    .onFail(() -> {})
-                    .build()))
+                _ -> {
+                  Screen previousScreen = Minecraft.getInstance().gui.screen();
+                  var askScreen =
+                      new TextureListAsk.Builder()
+                          .onSuccess(
+                              i -> {
+                                iconField.setValue(i.toString());
+                                Minecraft.getInstance().gui.setScreen(previousScreen);
+                              })
+                          .onFail(() -> Minecraft.getInstance().gui.setScreen(previousScreen))
+                          .build();
+                  Minecraft.getInstance().gui.setScreen(askScreen);
+                })
             .pos(width / 4 * 3, gap / 2)
             .size(width / 4, 20)
             .build();
@@ -177,8 +189,9 @@ public class RunnableScreen extends Screen {
     addRenderableWidget(endAngleField);
   }
 
-  public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-    extractBackground(context, mouseX, mouseY, delta);
+  @Override
+  public void extractRenderState(
+      @NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
     super.extractRenderState(context, mouseX, mouseY, delta);
   }
 

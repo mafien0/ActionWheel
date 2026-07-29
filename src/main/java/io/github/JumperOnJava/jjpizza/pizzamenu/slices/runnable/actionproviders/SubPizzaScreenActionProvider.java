@@ -6,7 +6,6 @@ import io.github.JumperOnJava.jjpizza.pizzamenu.SubPizzaManager;
 import io.github.JumperOnJava.jjpizza.pizzamenu.slices.runnable.actionregistry.ConfigurableRunnable;
 import io.github.JumperOnJava.lavajumper.common.FileReadWrite;
 import io.github.JumperOnJava.lavajumper.common.Tr;
-import io.github.JumperOnJava.lavajumper.gui.AskScreen;
 import io.github.JumperOnJava.lavajumper.gui.widgets.ScrollListWidget;
 import java.util.Random;
 import net.fabricmc.loader.api.FabricLoader;
@@ -72,8 +71,7 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
       addRenderableWidget(button);
 
       nameBox =
-          new EditBox(
-              minecraft.font, gap / 2, gap / 2, width / 2 - gap, 20, Component.empty());
+          new EditBox(minecraft.font, gap / 2, gap / 2, width / 2 - gap, 20, Component.empty());
       nameBox.setValue(target.id);
       nameBox.setResponder(
           s -> {
@@ -97,7 +95,7 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
       var dir = FabricLoader.getInstance().getConfigDir().resolve("jjpizza/sub").toFile();
       var files = dir.listFiles();
       if (files == null) return;
-      list.children().clear();
+      list.clearList();
       for (var file : files) {
         if (!file.getName().endsWith(".json")) continue;
         var filename = file.getName().replace(".json", "");
@@ -115,7 +113,7 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
         entry.addDrawableChild(
             new Button.Builder(
                     Component.literal("X"),
-                _ -> {
+                    _ -> {
                       //noinspection ResultOfMethodCallIgnored
                       file.delete();
                       updateList();
@@ -129,7 +127,12 @@ public class SubPizzaScreenActionProvider implements ConfigurableRunnable {
 
     private void editSelectedPizza(Button buttonWidget) {
       target.makeSurePizzaExists();
-      AskScreen.ask(target.pizza.getBuilderScreen((_) -> updateList(), this::updateList));
+      Screen previousScreen = Minecraft.getInstance().gui.screen();
+      var configScreen =
+          target.pizza.getBuilderScreen(
+              _ -> Minecraft.getInstance().gui.setScreen(previousScreen),
+              () -> Minecraft.getInstance().gui.setScreen(previousScreen));
+      Minecraft.getInstance().gui.setScreen(configScreen);
     }
 
     private void updatePizzaId(String s) {

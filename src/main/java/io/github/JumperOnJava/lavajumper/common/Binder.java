@@ -10,8 +10,7 @@ import net.minecraft.resources.Identifier;
 
 public class Binder {
   private static final KeyMapping.Category LAVAJUMPER_CATEGORY =
-      KeyMapping.Category.register(
-          Identifier.fromNamespaceAndPath("lavajumper", "lavajumper"));
+      KeyMapping.Category.register(Identifier.fromNamespaceAndPath("lavajumper", "lavajumper"));
 
   public static KeyMapping addBind(
       String displayName,
@@ -19,35 +18,27 @@ public class Binder {
       int defaultKey,
       Consumer<Minecraft> callback) {
 
-    KeyMapping bind =
-        new KeyMapping(
-            displayName,
-            InputConstants.Type.KEYSYM,
-            defaultKey,
-            category);
+    KeyMapping bind = new KeyMapping(displayName, InputConstants.Type.KEYSYM, defaultKey, category);
 
     KeyMappingHelper.registerKeyMapping(bind);
 
-    ClientTickEvents.END_CLIENT_TICK.register(client -> {
-      while (bind.consumeClick()) {
-        callback.accept(client);
-      }
-    });
+    ClientTickEvents.END_CLIENT_TICK.register(
+        client -> {
+          while (bind.consumeClick()) {
+            callback.accept(client);
+          }
+        });
 
     return bind;
   }
 
   public static KeyMapping addBind(
-      String displayName,
-      int defaultKey,
-      Consumer<Minecraft> callback) {
+      String displayName, int defaultKey, Consumer<Minecraft> callback) {
     return addBind(displayName, LAVAJUMPER_CATEGORY, defaultKey, callback);
   }
 
   public static KeyMapping addBind(
-      String displayName,
-      KeyMapping.Category category,
-      Consumer<Minecraft> callback) {
+      String displayName, KeyMapping.Category category, Consumer<Minecraft> callback) {
     return addBind(displayName, category, -1, callback);
   }
 }

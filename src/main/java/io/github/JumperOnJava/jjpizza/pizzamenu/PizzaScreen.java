@@ -14,8 +14,11 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PizzaScreen extends Screen {
+  private static final Logger LOGGER = LoggerFactory.getLogger(PizzaScreen.class);
   private final List<? extends PizzaSlice> slices;
   private final Screen configuratorScreen;
   private final PizzaManager manager;
@@ -36,6 +39,8 @@ public class PizzaScreen extends Screen {
   }
 
   public void init() {
+    LOGGER.debug(
+        "PizzaScreen.init - {} slices, configurator={}", slices.size(), configuratorScreen != null);
 
     if (configuratorScreen != null)
       addRenderableWidget(
@@ -52,11 +57,6 @@ public class PizzaScreen extends Screen {
               .pos(10, 32)
               .width(120)
               .build());
-      /*addDrawableChild(new ButtonWidget.Builder(Text.literal("Force load"),b->{
-      	//PizzaManager.getManager().actions.clear();
-      	manager.actions=manager.load();
-      }).position(10,54).width(70).build());*/
-
     }
 
     pizzaWidget = new PizzaWidget();
@@ -72,40 +72,43 @@ public class PizzaScreen extends Screen {
 
   private boolean releasedOnce = false;
 
-  public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-    if (manager.matchesKey(new KeyEvent(keyCode, scanCode, modifiers)) && !releasedOnce) {
+  public boolean keyReleased(KeyEvent event) {
+    LOGGER.debug("PizzaScreen.keyReleased: keysym={}, releasedOnce={}", event.key(), releasedOnce);
+    if (manager.matchesKey(event) && !releasedOnce) {
+      LOGGER.debug("Key matches, triggering clickAtMouse");
       clickAtMouse();
     }
     if (!releasedOnce) releasedOnce = true;
-    return super.keyReleased(new KeyEvent(keyCode, scanCode, modifiers));
+    return super.keyReleased(event);
   }
 
   private void clickAtMouse() {
     double x = minecraft.mouseHandler.xpos() / minecraft.options.guiScale().get();
     double y = minecraft.mouseHandler.ypos() / minecraft.options.guiScale().get();
+    LOGGER.debug("clickAtMouse: ({}, {})", x, y);
 
     this.mouseClicked(
         new MouseButtonEvent(
-            x,
-            y,
-            new MouseButtonInfo(0, 0) // left mouse button, no modifiers
-        ), false
-    );
+            x, y, new MouseButtonInfo(0, 0) // left mouse button, no modifiers
+            ),
+        false);
   }
 
-  public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+  public boolean keyPressed(@NonNull KeyEvent event) {
     if (!releasedOnce) return false;
-    if (manager.matchesKey(new KeyEvent(keyCode, scanCode, modifiers))) {
+    LOGGER.debug("PizzaScreen.keyPressed: keysym={}", event.key());
+    if (manager.matchesKey(event)) {
+      LOGGER.debug("Key matches, triggering clickAtMouse + close");
       clickAtMouse();
       this.onClose();
       return true;
     }
-    return super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
+    return super.keyPressed(event);
   }
 
   @Override
-  public void extractRenderState(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-    extractBackground(context, mouseX, mouseY, delta);
+  public void extractRenderState(
+      @NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
     super.extractRenderState(context, mouseX, mouseY, delta);
   }
 }

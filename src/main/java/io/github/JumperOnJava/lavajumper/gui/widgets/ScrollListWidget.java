@@ -15,12 +15,10 @@ import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.NonNull;
 
 /** Scroll list widget for general use. */
-public class ScrollListWidget
-    extends ObjectSelectionList<ScrollListWidget.ScrollListEntry> {
+public class ScrollListWidget extends ObjectSelectionList<ScrollListWidget.ScrollListEntry> {
   public static boolean renderingEntries;
 
-  public ScrollListWidget(
-      Minecraft client, int width, int height, int x, int y, int itemHeight) {
+  public ScrollListWidget(Minecraft client, int width, int height, int x, int y, int itemHeight) {
     super(client, width, height, y, itemHeight);
     setX(x);
     // setRenderBackground(false);
@@ -30,6 +28,10 @@ public class ScrollListWidget
   @Override
   public int getRowWidth() {
     return this.width;
+  }
+
+  public void clearList() {
+    clearEntries();
   }
 
   public int addEntry(ScrollListEntry entry) {
@@ -95,8 +97,7 @@ public class ScrollListWidget
         int mouseX,
         int mouseY,
         boolean hovered,
-        float delta
-    ) {
+        float delta) {
       for (var d : drawables) {
         context.pose().pushMatrix();
         context.pose().translate((float) getX(), (float) getY());
@@ -116,8 +117,10 @@ public class ScrollListWidget
     @Override
     public boolean mouseClicked(final @NonNull MouseButtonEvent event, final boolean doubleClick) {
       if (!isMouseOver(event.x(), event.y())) return false;
+      MouseButtonEvent translated =
+          new MouseButtonEvent(event.x() - getX(), event.y() - getY(), event.buttonInfo());
       for (var c : children) {
-        c.mouseClicked(event, doubleClick);
+        c.mouseClicked(translated, doubleClick);
       }
       return false;
     }

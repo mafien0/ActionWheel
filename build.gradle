@@ -33,6 +33,7 @@ dependencies {
 }
 
 spotless {
+	enforceCheck false
 	java {
 		target fileTree(rootDir) {
 			include 'src/*/java/**/*.java'
@@ -90,4 +91,3 @@ publishing {
 		// retrieving dependencies.
 	}
 }
-

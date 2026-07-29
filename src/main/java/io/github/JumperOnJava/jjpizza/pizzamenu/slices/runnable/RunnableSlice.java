@@ -13,8 +13,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RunnableSlice implements ConfigurablePizzaSlice {
+  private static final Logger LOGGER = LoggerFactory.getLogger(RunnableSlice.class);
   @Expose CircleSlice circleSlice;
   @Expose String name;
   @Expose int color;
@@ -55,12 +58,16 @@ public class RunnableSlice implements ConfigurablePizzaSlice {
 
   @Override
   public void onLeftClick() {
+    LOGGER.debug(
+        "RunnableSlice.onLeftClick: {} ({})", name, onLeftClick.getClass().getSimpleName());
     Minecraft.getInstance().gui.setScreen(null);
     onLeftClick.run();
   }
 
   @Override
   public void onRightClick() {
+    LOGGER.debug(
+        "RunnableSlice.onRightClick: {} ({})", name, onRightClick.getClass().getSimpleName());
     Minecraft.getInstance().gui.setScreen(null);
     onRightClick.run();
   }

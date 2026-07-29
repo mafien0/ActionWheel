@@ -1,7 +1,6 @@
 package io.github.JumperOnJava.jjpizza.pizzamenu;
 
 import io.github.JumperOnJava.lavajumper.common.Binder;
-
 import java.io.File;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;

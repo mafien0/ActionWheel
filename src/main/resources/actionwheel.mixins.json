@@ -1,13 +1,12 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "cc.mafien0.ActionWheel.core.mixin",
+  "package": "cc.mafien0.ActionWheel.actionWheel.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
   ],
   "client": [
-    "cc.mafien0.ActionWheel.core.mixin.ScissorMixin",
-    "cc.mafien0.ActionWheel.core.mixin.ScreenMixins"
+    "cc.mafien0.ActionWheel.actionWheel.mixin.FakeKeyBindMatchMixin"
   ],
   "injectors": {
     "defaultRequire": 1

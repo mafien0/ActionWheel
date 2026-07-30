@@ -1,42 +1,41 @@
 {
-  "schemaVersion": 1,
-  "id": "jjpizza",
-  "version": "${version}",
-
-  "name": "Jumper's Pizzeria",
-  "description": "Adds action pizza menu that allows to bind different actions to them (like keybinds, chat messages)",
-  "authors": [
-    "JavaJumper"
-  ],
-  "contact": {
-    "homepage": "https://jumperonjava.github.io/",
-    "sources": "https://github.com/JumperOnJava/JumpersPizzeria"
-  },
-
-  "license": "GPL v3",
-  "icon": "assets/jjpizza/icon.png",
-  "mixins": [
-    "jjpizza.mixins.json",
-    "ljc.mixins.json"
-  ],
-  "environment": "*",
-  "entrypoints": {
-    "client": [
-      "io.github.JumperOnJava.jjpizza.PizzeriaApi"
-    ]
-  },
-  "accessWidener": "jjpizza.accesswidener",
-  "depends": {
-    "fabricloader": ">=0.14.21",
-    "fabric-api": "*",
-    "minecraft": ["26.2"],
-    "java": ">=21"
-  },
-  "custom": {
-    "modmenu": {
-      "links": {
-        "modmenu.discord": "https://discord.gg/44sD49Aan3"
-      }
-    }
-  }
+	"schemaVersion": 1,
+	"id": "actionwheel",
+	"version": "${version}",
+	"name": "Action Wheel",
+	"description": "original author: `JavaJumper`(modrinth)",
+	"authors": [
+		"mafien0"
+	],
+	"contact": {
+		"sources": "https://codeberg.org/mafien0/ActionWheel"
+	},
+	"license": "GPL v3",
+	"icon": "assets/actionWheel/icon.png",
+	"mixins": [
+		"actionwheel.mixins.json",
+		"ljc.mixins.json"
+	],
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+			"cc.mafien0.ActionWheel.actionWheel.PizzeriaApi"
+		]
+	},
+	"accessWidener": "actionWheel.accesswidener",
+	"depends": {
+		"fabricloader": ">=0.14.21",
+		"fabric-api": "*",
+		"minecraft": [
+			"26.2"
+		],
+		"java": ">=21"
+	},
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.discord": "https://discord.gg/44sD49Aan3"
+			}
+		}
+	}
 }

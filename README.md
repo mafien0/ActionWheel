@@ -1,6 +1,6 @@
-# Jumper's pizzeria!
+# Action Wheel!
 
-This mod adds pizza menu on which you can add different actions. 
+This mod adds action wheel menu on which you can add different actions.
 Currently supported actions are keybinds and chat messages/commands
 
 Mod also adds small api that allows you add new action types
@@ -22,11 +22,11 @@ Example:
 public class ChatMessageActionProvider implements ConfigurableRunnable {
     @Expose
     private String message="Hello, world!";
-    
-    
+
+
     public ChatMessageActionProvider(Boolean isReal) {
         if(!isReal)
-            return; 
+            return;
         //Api may create extra objects for internal use,
         //so when it happens isReal parameter will be false
         //in this case you can safely return from constuctor
@@ -35,12 +35,12 @@ public class ChatMessageActionProvider implements ConfigurableRunnable {
     //you don't need it
     public void setParent(ConfigurablePizzaSlice pizzaSlice) {
     }
-    
+
     @Override
     public Screen getConfiguratorScreen() {
         return new ChatMessageEditScreen(this);
     }
-    
+
     @Override
     public void run() {
         var n = MinecraftClient.getInstance().getNetworkHandler();
@@ -57,7 +57,7 @@ public class ChatMessageActionProvider implements ConfigurableRunnable {
             this.target=target;
         }
         protected void init(){
-            var field = new TextFieldWidget(MinecraftClient.getInstance().textRenderer,gap/2,gap/2,width-gap,20, Translation.get("jjpizza.chat.messagehere"));
+            var field = new TextFieldWidget(MinecraftClient.getInstance().textRenderer,gap/2,gap/2,width-gap,20, Translation.get("actionWheel.chat.messagehere"));
             field.setText(target.message);
             field.setChangedListener(s->target.message=s);
             addDrawableChild(field);

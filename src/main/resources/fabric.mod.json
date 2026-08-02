@@ -14,12 +14,12 @@
 	"icon": "assets/actionWheel/icon.png",
 	"mixins": [
 		"actionwheel.mixins.json",
-		"ljc.mixins.json"
+        "core.mixins.json"
 	],
 	"environment": "*",
 	"entrypoints": {
 		"client": [
-			"cc.mafien0.ActionWheel.actionWheel.PizzeriaApi"
+			"cc.mafien0.actionWheel.actionWheel.PizzeriaApi"
 		]
 	},
 	"accessWidener": "actionWheel.accesswidener",
